@@ -45,29 +45,25 @@ namespace FtpSync
             Inject.SetDependenciesTest();
             AppDomain.CurrentDomain.UnhandledException += ProcessException;
 
-            // Камера/Год/Месяц/День/Час
+            //Камера/Год/Месяц/День/Час
 
-            var client = new FtpClient("192.168.88.11");
-            client.Credentials = new NetworkCredential("ftpuser", "123");
-            client.Connect();
+            //foreach (FtpListItem item in client.GetListing("/video"))
+            //{
+            //    Console.WriteLine(item.FullName);
+            //    // if this is a file
+            //    if (item.Type == FtpFileSystemObjectType.File)
+            //    {
+            //        // get the file size
+            //        long size = client.GetFileSize(item.FullName);
+            //    }
 
-            foreach (FtpListItem item in client.GetListing("/video"))
-            {
-                Console.WriteLine(item.FullName);
-                // if this is a file
-                if (item.Type == FtpFileSystemObjectType.File)
-                {
-                    // get the file size
-                    long size = client.GetFileSize(item.FullName);
-                }
+            //    // get modified date/time of the file or folder
+            //    DateTime time = client.GetModifiedTime(item.FullName);
 
-                // get modified date/time of the file or folder
-                DateTime time = client.GetModifiedTime(item.FullName);
+            //   //calculate a hash for the file on the server side (default algorithm)
+            //   // FtpHash hash = client.GetHash(item.FullName);
 
-               //calculate a hash for the file on the server side (default algorithm)
-               // FtpHash hash = client.GetHash(item.FullName);
-
-            }
+            //}
 
             Console.ReadKey();
         }
