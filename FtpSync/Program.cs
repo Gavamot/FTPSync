@@ -49,9 +49,19 @@ namespace FtpSync
 
             using (var db = new DataContext())
             {
-                var a = db.VideoReg.Add(new VideoReg() {BrigadeCode = 60, Ip = "123", User = "4", Password = "12"});
+                var a = db.VideoReg.Add(new VideoReg()
+                {
+                    BrigadeCode = 60,
+                    Ip = "123",
+                    User = "4",
+                    Password = "12",
+                    VideoFolder = "video",
+                    ChannelFolder = "channel",
+                    AutoLoadChannel = 1,
+                    AutoLoadVideo = 2,
+                    DT = DateTime.Now
+                });
                 db.SaveChanges();
-                var aa = 1;
             }
 
             using (var db = new DataContext())

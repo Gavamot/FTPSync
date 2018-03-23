@@ -18,7 +18,6 @@ namespace FtpSync.Entety
 
         public VideoReg VideoReg { get; set; }
         public int Num { get; set; }
-        public string TimeStamp { get; set; }
-        // public DateTime TimeStamp { get; set; }
+        public DateTime TimeStamp { get; set; }
     }
 }
