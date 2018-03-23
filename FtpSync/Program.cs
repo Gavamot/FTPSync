@@ -1,11 +1,13 @@
 ﻿using FluentFTP;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using FtpSync.Entety;
 using Newtonsoft.Json;
 using NLog;
 
@@ -45,6 +47,19 @@ namespace FtpSync
             Inject.SetDependenciesTest();
             AppDomain.CurrentDomain.UnhandledException += ProcessException;
 
+            using (var db = new DataContext())
+            {
+                var a = db.VideoReg.Add(new VideoReg() {BrigadeCode = 60, Ip = "123", User = "4", Password = "12"});
+                db.SaveChanges();
+                var aa = 1;
+            }
+
+            using (var db = new DataContext())
+            {
+                db.VideoReg.Load();
+                var a = db.VideoReg.Local.ToList();
+                var aa = 1;
+            }
             //Камера/Год/Месяц/День/Час
 
             //foreach (FtpListItem item in client.GetListing("/video"))
