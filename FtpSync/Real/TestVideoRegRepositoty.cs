@@ -16,7 +16,7 @@ namespace FtpSync.Real
             {
                 Id = 1,
                 BrigadeCode = 1,
-                Src = "ftp://",
+                Ip = "192.168.88.11",
                 User = "ftpuser",
                 Password = "123"
             };
@@ -24,7 +24,7 @@ namespace FtpSync.Real
             {
                 Id = 2,
                 BrigadeCode = 2,
-                Src = "ftp://",
+                Ip = "ftp://",
                 User = "ftpuser",
                 Password = "123"
             };
