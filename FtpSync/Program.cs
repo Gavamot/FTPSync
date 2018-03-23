@@ -49,7 +49,7 @@ namespace FtpSync
 
             using (var db = new DataContext())
             {
-                var a = db.VideoReg.Add(new VideoReg()
+                var v = new VideoReg()
                 {
                     BrigadeCode = 60,
                     Ip = "123",
@@ -57,19 +57,43 @@ namespace FtpSync
                     Password = "12",
                     VideoFolder = "video",
                     ChannelFolder = "channel",
-                    AutoLoadChannel = 1,
+                    ChannelAutoLoad = 1,
                     AutoLoadVideo = 2,
-                    DT = DateTime.Now
-                });
+                    ChannelTimeStamp = DateTime.Now
+                };
+
+                var c1 = new Camera
+                {
+                    VideoReg = v,
+                    Num = 1,
+                    VideoRegId = 1,
+                    TimeStamp = DateTime.Now,
+                    
+
+                };
+                var c2 = new Camera
+                {
+                    VideoReg = v,
+                    Num = 2,
+                    VideoRegId = 1,
+                    TimeStamp = DateTime.Now
+                };
+                v.Camers = new List<Camera> { c1, c2 };
+                db.VideoReg.Add(v);
                 db.SaveChanges();
+
+
             }
 
             using (var db = new DataContext())
             {
+                db.Camera.Load();
                 db.VideoReg.Load();
                 var a = db.VideoReg.Local.ToList();
                 var aa = 1;
             }
+
+
             //Камера/Год/Месяц/День/Час
 
             //foreach (FtpListItem item in client.GetListing("/video"))

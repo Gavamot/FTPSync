@@ -10,8 +10,10 @@ using FtpSync.Value;
 
 namespace FtpSync.Entety
 {
+    [Table("VideoReg")]
     class VideoReg
     {
+        [Key]
         public int Id { get; set; }
         public int BrigadeCode { get; set; }
 
@@ -23,11 +25,13 @@ namespace FtpSync.Entety
 
         // Каталоги для перекачки если null то незакачивать
         public string ChannelFolder { get; set; }
-        public int AutoLoadChannel { get; set; }
+        public int ChannelAutoLoad { get; set; }
+        public DateTime ChannelTimeStamp { get; set; }
 
         public string VideoFolder { get; set; }
         public int AutoLoadVideo { get; set; }
-        public DateTime DT { get; set; }
-        //public IEnumerable<Camera> Cameras { get; set; }
+
+        [InverseProperty("VideoReg")]
+        public List<Camera> Camers { get; set; }
     }
 }

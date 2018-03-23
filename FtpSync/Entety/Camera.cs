@@ -8,16 +8,21 @@ using System.Threading.Tasks;
 
 namespace FtpSync.Entety
 {
+    [Table("Camera")]
     class Camera
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Key]
         [ForeignKey("VideoReg")]
         public int VideoRegId { get; set; }
 
+        //[ForeignKey("VideoRegId")]
         public VideoReg VideoReg { get; set; }
+
         public int Num { get; set; }
+        // 2018-03-23 21:59:25.9691178
         public DateTime TimeStamp { get; set; }
     }
 }
