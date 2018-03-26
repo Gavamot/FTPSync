@@ -5,9 +5,11 @@ using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FtpSync.Entety;
+using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using NLog;
 
@@ -18,7 +20,7 @@ namespace FtpSync
         private const string PathConfig = "config.json";
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-        private static readonly Config config = ReadConfig();
+        public static readonly Config config = ReadConfig();
 
         static Config ReadConfig()
         {
@@ -42,14 +44,41 @@ namespace FtpSync
             logger.Error(exception);
         }
 
+        // Запускаем web Api 2
+        
+
         static void Main(string[] args)
         {
-            Inject.SetDependenciesTest();
+          
+            //Inject.SetDependenciesTest();
             AppDomain.CurrentDomain.UnhandledException += ProcessException;
 
+            using (WebApp.Start<Startup>(config.Host))
+            {
+                logger.Info($"HOST {config.Host} was starting...");
+                var client = new HttpClient();
+                var response = client.GetAsync(config.Host + "api/channel").Result;
+
+                Console.WriteLine(response);
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+                Console.ReadKey();
+
+
+            }
+          
+        }
+
+        static void TestOrm()
+        {
             using (var db = new DataContext())
             {
-                var a = db.VideoReg.Add(new VideoReg()
+                db.Camera.Load();
+                db.VideoReg.Load();
+                foreach (var vid in db.VideoReg.Local)
+                {
+                    Console.WriteLine(vid.ToString());
+                }
+                var v = new VideoReg()
                 {
                     BrigadeCode = 60,
                     Ip = "123",
@@ -57,40 +86,43 @@ namespace FtpSync
                     Password = "12",
                     VideoFolder = "video",
                     ChannelFolder = "channel",
-                    AutoLoadChannel = 1,
+                    ChannelAutoLoad = 1,
                     AutoLoadVideo = 2,
-                    DT = DateTime.Now
-                });
+                    ChannelTimeStamp = DateTime.Now
+                };
+
+                var c1 = new Camera
+                {
+                    VideoReg = v,
+                    Num = 1,
+                    VideoRegId = 1,
+                    TimeStamp = DateTime.Now,
+                };
+
+                var c2 = new Camera
+                {
+                    VideoReg = v,
+                    Num = 2,
+                    VideoRegId = 1,
+                    TimeStamp = DateTime.Now
+                };
+                v.Camers = new List<Camera> { c1, c2 };
+                db.VideoReg.Add(v);
                 db.SaveChanges();
             }
 
+            Console.WriteLine("----------------------------------------------------");
+
             using (var db = new DataContext())
             {
+                db.Camera.Load();
                 db.VideoReg.Load();
-                var a = db.VideoReg.Local.ToList();
-                var aa = 1;
+                foreach (var v in db.VideoReg.Local)
+                {
+                    Console.WriteLine(v.ToString());
+                }
+
             }
-            //Камера/Год/Месяц/День/Час
-
-            //foreach (FtpListItem item in client.GetListing("/video"))
-            //{
-            //    Console.WriteLine(item.FullName);
-            //    // if this is a file
-            //    if (item.Type == FtpFileSystemObjectType.File)
-            //    {
-            //        // get the file size
-            //        long size = client.GetFileSize(item.FullName);
-            //    }
-
-            //    // get modified date/time of the file or folder
-            //    DateTime time = client.GetModifiedTime(item.FullName);
-
-            //   //calculate a hash for the file on the server side (default algorithm)
-            //   // FtpHash hash = client.GetHash(item.FullName);
-
-            //}
-
-            Console.ReadKey();
         }
 
 
