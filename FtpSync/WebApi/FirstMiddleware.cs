@@ -8,7 +8,7 @@ namespace FtpSync
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public FirstMiddleware(OwinMiddleware next, ILogger logger) : base(next)
+        public FirstMiddleware(OwinMiddleware next) : base(next)
         {
           
         }

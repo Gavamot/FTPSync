@@ -2,6 +2,7 @@
 using System.Web.Http;
 using Autofac;
 using Autofac.Integration.WebApi;
+using FtpSync.Controller;
 using Owin;
 
 namespace FtpSync
@@ -37,8 +38,8 @@ namespace FtpSync
 
             // Autofac will add middleware to IAppBuilder in the order registered.
             // The middleware will execute in the order added to IAppBuilder.
-            //builder.RegisterType<FirstMiddleware>().InstancePerRequest();
-            //builder.RegisterType<SecondMiddleware>().InstancePerRequest();
+            builder.RegisterType<FirstMiddleware>().InstancePerRequest();
+            builder.RegisterType<SecondMiddleware>().InstancePerRequest();
 
             // Create and assign a dependency resolver for Web API to use.
             var container = builder.Build();

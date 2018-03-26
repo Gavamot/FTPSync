@@ -33,14 +33,24 @@ namespace FtpSync.Real
             return client.DownloadFile(localPath, remotePath);
         }
 
-        //public bool DownloadByPeriod(DateTime start, DateTime end)
-        //{
-        //    return client.DownloadFile(localPath, remotePath);
-        //}
+        public bool DownloadByPeriod(DateTime start, DateTime end)
+        {
+            return client.DownloadFile(localRoot, remoteRoot);
+        }
 
+
+
+
+        //public IEnumerable<string> GetFiles(DateTime start, DateTime end)
+        //{
+        //    foreach (FtpListItem item in client.GetListing("/channels", FtpListOption.Recursive))
+        //    {
+
+        //    }
+        //}
         //public List<string> GetRemoteFiles(DateTime start, DateTime end)
         //{
-           
+
         //}
 
 
