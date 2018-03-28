@@ -23,7 +23,7 @@ namespace FtpSync.Entety
         public VideoReg VideoReg { get; set; }
 
         [Required]
-        [Range(0, 16)]
+        [Range(0, 9)]
         public int Num { get; set; }
 
         // 2018-03-23 21:59:25.9691178

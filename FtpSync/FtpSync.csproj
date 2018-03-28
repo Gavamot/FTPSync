@@ -125,9 +125,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DateExt.cs" />
     <Compile Include="Real\FileFactory.cs" />
     <Compile Include="Real\FtpLoaderFactory.cs" />
     <Compile Include="Rep\RepVideoReg.cs" />
+    <Compile Include="ChannelTaskManager.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Controller\ChannelController.cs" />

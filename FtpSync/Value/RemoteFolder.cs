@@ -85,7 +85,6 @@ namespace FtpSync.Value
             return res;
         }
 
-
         [TestFixture]
         class Test : TestBase
         {

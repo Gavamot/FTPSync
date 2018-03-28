@@ -49,27 +49,7 @@ namespace FtpSync
             logger.Error(exception);
         }
 
-        static void DownloadFilesByInterval(int brigadeCode, DateTime start, DateTime end)
-        {
-            List<RemoteFolder> remoteFolders = RemoteFolder.GetAllHoursFolders(client, "/channels", folder => folder.BitwinDate(start, end));
-            foreach (RemoteFolder remoteFolder in remoteFolders)
-            {
-                //Console.WriteLine($"{remoteFolder}   |    {remoteFolder.YyyyMMddHH:yyyy-MM-dd HH:mm:ss}");
-                string localFolder = remoteFolder.GetLocalPath(config.ChannelFolder, brigadeCode);
-                //Console.WriteLine($"localFolder = {localFolder}");
-               // client.DownloadFiles(localFolder, client.GetListing(remoteFolder.ToString()).Select(x => x.FullName));
-                foreach (FtpListItem remoteFile in client.GetListing(remoteFolder.ToString()))
-                {
-                    if (remoteFile.Type == FtpFileSystemObjectType.File)
-                    {
-                        client.DownloadFile(Path.Combine(localFolder, remoteFile.Name), remoteFile.FullName);
-                        Console.WriteLine(remoteFile.FullName);
-                    }
-                }
-            }
-        }
-
-        private static FtpClient client;
+       
         // Получить все катологи  
         static void Main(string[] args)
         {
@@ -77,64 +57,28 @@ namespace FtpSync
             //Inject.SetDependenciesTest();
             AppDomain.CurrentDomain.UnhandledException += ProcessException;
 
+            // Первая инициализация для чтобы потом работало быстрее
+            var t = ChannelTaskManager.Instance;
             // Запускаем web Api 2
             var host = WebApp.Start<Startup>(config.Host);
 
-            client = new FtpClient("192.168.1.158");
-            // if you don't specify login credentials, we use the "anonymous" user account
-            client.Credentials = new NetworkCredential("oem", "123");
-            // begin connecting to the server
-            client.Connect();
+            //DateTime start = new DateTime(2018, 5, 2, 17, 0, 0);
+            //DateTime end = new DateTime(2018, 5, 2, 18, 0, 0);
 
-            DateTime start = new DateTime(2018, 5, 2, 17, 0, 0);
-            DateTime end = new DateTime(2018, 5, 2, 18, 0, 0);
-            int brigadeCode = 123;
+            //var video = new VideoReg
+            //{
+            //    Ip = "192.168.1.158",
+            //    Password = "123",
+            //    User = "oem",
+            //    BrigadeCode = 123,
+            //    ChannelFolder = "/channels"
+            //};
 
-            var video = new VideoReg()
-            {
-                Ip = "192.168.1.158",
-                Password = "123",
-                User = "oem",
-                BrigadeCode = 123,
-                ChannelFolder = "/channels"
-            };
-            //var ftp = new FtpChannelsLoader(video.FtpSettings, video.BrigadeCode, video.ChannelFolder);
+            //var ftp = FtpLoader.Start(video.FtpSettings, video.BrigadeCode, video.ChannelFolder, config.ChannelFolder);
+            //ftp.DownloadFilesByInterval(start, end);
             
             //DownloadByInterval(brigadeCode, start, end);
-
-           // client.DownloadFile(@"C:\MyVideo_2.mp4", "/htdocs/big2.txt");
-
-
-            // Год
-            //foreach (FtpListItem y in client.GetListing("/channels"))
-            //{
-            //    if (y.Type == FtpFileSystemObjectType.Directory)
-            //    {
-            //        // Месяц
-            //        foreach (FtpListItem m in client.GetListing(y.FullName))
-            //        {
-            //            if (m.Type == FtpFileSystemObjectType.Directory)
-            //            {
-            //                // Месяц
-            //                foreach (FtpListItem d in client.GetListing(m.FullName))
-            //                {
-            //                    if (d.Type == FtpFileSystemObjectType.Directory)
-            //                    {
-            //                        // Месяц
-            //                        foreach (FtpListItem h in client.GetListing(d.FullName))
-            //                        {
-            //                            if (h.Type == FtpFileSystemObjectType.Directory)
-            //                            {
-            //                                Console.WriteLine(h.FullName);
-            //                            }
-            //                        }
-            //                    }
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
-
+            // client.DownloadFile(@"C:\MyVideo_2.mp4", "/htdocs/big2.txt");
             Console.ReadKey();
         }
 
@@ -171,7 +115,7 @@ namespace FtpSync
                 {
                     Console.WriteLine(vid.ToString());
                 }
-                var v = new VideoReg()
+                var v = new VideoReg
                 {
                     BrigadeCode = 60,
                     Ip = "123",

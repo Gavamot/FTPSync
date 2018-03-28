@@ -19,8 +19,8 @@ namespace FtpSync.Real
         public string RemoteRoot { get; protected set; }
         public int BrigadeCode { get; protected set; }
 
-        protected FtpLoader() { }
-        protected FtpLoader(FtpSettings settings, int brigadeCode, string remoteRoot, string localRoot)
+        public FtpLoader() { }
+        public FtpLoader(FtpSettings settings, int brigadeCode, string remoteRoot, string localRoot)
         {
             this.Settings = settings;
             this.BrigadeCode = brigadeCode;
@@ -28,6 +28,13 @@ namespace FtpSync.Real
             this.LocalRoot = localRoot;
             this.Client = new FtpClient(settings.Ip);
             this.Client.Credentials = new NetworkCredential(settings.User, settings.Password);
+        }
+
+        public static FtpLoader Start(FtpSettings settings, int brigadeCode, string remoteRoot, string localRoot)
+        {
+            var res = new FtpLoader(settings, brigadeCode, remoteRoot, localRoot);
+            res.Connect();
+            return res;
         }
 
         public void Connect()
@@ -43,26 +50,33 @@ namespace FtpSync.Real
         public void DownloadFilesByInterval(DateTime start, DateTime end)
         {
             // Получаем все каталоги отфильтрованные по диапозону дат [час]
-            List<RemoteFolder> remoteFolders = RemoteFolder.GetAllHoursFolders(Client, LocalRoot, folder => folder.BitwinDate(start, end));
+            List<RemoteFolder> remoteFolders = RemoteFolder.GetAllHoursFolders(Client, RemoteRoot, folder => folder.BitwinDate(start, end));
            
             foreach (RemoteFolder remoteFolder in remoteFolders)
             {
                 // Папка куда копировать файлы [час]
-                string localFolder = remoteFolder.GetLocalPath(RemoteRoot, BrigadeCode);
+                string localFolder = remoteFolder.GetLocalPath(LocalRoot, BrigadeCode);
                 foreach (FtpListItem remoteFile in Client.GetListing(remoteFolder.ToString()))
                 {
                     if (remoteFile.Type == FtpFileSystemObjectType.File)
                     {
                         string localFile = Path.Combine(localFolder, remoteFile.Name);
-                        Client.DownloadFile(localFile, remoteFile.FullName);
-                        logger.Info($"{remoteFile.FullName} [OK]");
+                        IFile f = new FileFactory().Create(localFile);
+
+                        // Файл полностью записан и его нет на диске существует
+                        if (f.IsComplete && !System.IO.File.Exists(localFile))
+                        {
+                            Client.DownloadFile(localFile, remoteFile.FullName);
+                            logger.Info($"{f} [OK]");
+                        }
+                        else
+                        {
+                            logger.Info($"{f} [MISS]");
+                        }
                     }
                 }
             }
         }
-
-        
-
 
         public void Disconnect()
         {

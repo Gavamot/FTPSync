@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FtpSync.Value
 {
-    struct FtpSettings
+    class FtpSettings
     {
         public FtpSettings(string ip, string user, string password)
         {
