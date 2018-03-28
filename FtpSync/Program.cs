@@ -3,12 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.SQLite;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FtpSync.Entety;
+using FtpSync.Real;
 using FtpSync.Value;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
@@ -47,43 +49,28 @@ namespace FtpSync
             logger.Error(exception);
         }
 
-
-        // Получить все катологи  
-        static List<Folder> GetAllFoldersInFolders(FtpClient client, string folder, Func<Folder, bool> func = null)
+        static void DownloadFilesByInterval(int brigadeCode, DateTime start, DateTime end)
         {
-            var res = new List<Folder>();
-            void AddFolders(FtpListItem f, int recurs)
+            List<RemoteFolder> remoteFolders = RemoteFolder.GetAllHoursFolders(client, "/channels", folder => folder.BitwinDate(start, end));
+            foreach (RemoteFolder remoteFolder in remoteFolders)
             {
-                if (recurs == 0)
+                //Console.WriteLine($"{remoteFolder}   |    {remoteFolder.YyyyMMddHH:yyyy-MM-dd HH:mm:ss}");
+                string localFolder = remoteFolder.GetLocalPath(config.ChannelFolder, brigadeCode);
+                //Console.WriteLine($"localFolder = {localFolder}");
+               // client.DownloadFiles(localFolder, client.GetListing(remoteFolder.ToString()).Select(x => x.FullName));
+                foreach (FtpListItem remoteFile in client.GetListing(remoteFolder.ToString()))
                 {
-                    Folder item = Folder.Create(f);
-
-                    if (func == null)
+                    if (remoteFile.Type == FtpFileSystemObjectType.File)
                     {
-                        res.Add(item);
-                    }
-                    else
-                    {
-                        if (func(item))
-                            res.Add(item);
-                    }     
-                }
-                else
-                {
-                    foreach (FtpListItem y in client.GetListing(f.FullName))
-                    {
-                        if (y.Type == FtpFileSystemObjectType.Directory)
-                        {
-                            AddFolders(y, recurs - 1);
-                        }
+                        client.DownloadFile(Path.Combine(localFolder, remoteFile.Name), remoteFile.FullName);
+                        Console.WriteLine(remoteFile.FullName);
                     }
                 }
-                
             }
-            AddFolders(new FtpListItem{ FullName = folder }, 4);
-            return res;
         }
 
+        private static FtpClient client;
+        // Получить все катологи  
         static void Main(string[] args)
         {
             //var a = new FtpListItem("/channel");
@@ -93,27 +80,29 @@ namespace FtpSync
             // Запускаем web Api 2
             var host = WebApp.Start<Startup>(config.Host);
 
-            FtpClient client = new FtpClient("192.168.88.11");
+            client = new FtpClient("192.168.1.158");
             // if you don't specify login credentials, we use the "anonymous" user account
-            client.Credentials = new NetworkCredential("ftpuser", "123");
+            client.Credentials = new NetworkCredential("oem", "123");
             // begin connecting to the server
             client.Connect();
 
-            var f = new FtpListItem {FullName = "/channels/2018/2/14/10/2018.02.14T10.43.17_14_0_0_0.json" };
-            Console.WriteLine(f.);
-            var f2 = new FtpListItem { FullName = "/channels/2018/2/14/15/2018.02.14T15.47.37_14_0_0_0.json" };
-            Console.WriteLine(f2.LinkCount);
+            DateTime start = new DateTime(2018, 5, 2, 17, 0, 0);
+            DateTime end = new DateTime(2018, 5, 2, 18, 0, 0);
+            int brigadeCode = 123;
 
+            var video = new VideoReg()
+            {
+                Ip = "192.168.1.158",
+                Password = "123",
+                User = "oem",
+                BrigadeCode = 123,
+                ChannelFolder = "/channels"
+            };
+            //var ftp = new FtpChannelsLoader(video.FtpSettings, video.BrigadeCode, video.ChannelFolder);
+            
+            //DownloadByInterval(brigadeCode, start, end);
 
-            //DateTime start = new DateTime(2018, 2, 15, 10, 0, 0);
-            //DateTime end = new DateTime(2018, 2, 16, 10, 0, 0);
-
-            //foreach (var v in GetAllFoldersInFolders(client, "/channels", folder =>folder.BitwinDate(start, end) ))
-            //{
-            //    Console.WriteLine($"{v.File.FullName}   |    {v.YyyyMMddHH:yyyy-MM-dd HH:mm:ss}");
-            //}
-
-
+           // client.DownloadFile(@"C:\MyVideo_2.mp4", "/htdocs/big2.txt");
 
 
             // Год
@@ -149,7 +138,20 @@ namespace FtpSync
             Console.ReadKey();
         }
 
-        static void TestWebApi()
+        // Каскадное удалене
+        // Извлечь нужного покупателя из таблицы вместе с заказами
+        //Customer customer = context.Customers
+        //        .Include(c => c.Orders)
+        //        .FirstOrDefault(c => c.FirstName == "Василий");
+
+        //    // Удалить этого покупателя
+        //    if (customer != null)
+        //{
+        //    context.Customers.Remove(customer);
+        //    context.SaveChanges();
+        //}
+
+    static void TestWebApi()
         {
             logger.Info($"HOST {config.Host} was starting...");
             var client = new HttpClient();

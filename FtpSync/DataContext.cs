@@ -21,10 +21,12 @@ namespace FtpSync
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            // Привязка видеорегистраторов с камерами 
             modelBuilder.Entity<Camera>()
                 .HasRequired(cam => cam.VideoReg)
                 .WithMany(vreg => vreg.Camers)
-                .HasForeignKey(x => x.VideoRegId);
+                .HasForeignKey(x => x.VideoRegId)
+                .WillCascadeOnDelete(true); // Каскадное удаление
             //modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
         }
     }

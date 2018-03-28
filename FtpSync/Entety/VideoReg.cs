@@ -15,20 +15,37 @@ namespace FtpSync.Entety
     {
         [Key]
         public int Id { get; set; }
+
+        [Required]
+        [Range(0, 10000000)]
         public int BrigadeCode { get; set; }
 
         // Настройки FTP
+        [Required]
+        [MaxLength(24)]
         public string Ip { get; set; }
+
+        [Required]
+        [MaxLength(24)]
         public string User { get; set; }
+
+        [MaxLength(50)]
         public string Password { get; set; }
         public FtpSettings FtpSettings => new FtpSettings(Ip, User, Password);
 
         // Каталоги для перекачки если null то незакачивать
+        [MaxLength(500)]
         public string ChannelFolder { get; set; }
+
+        [Range(0, 1)]
         public int ChannelAutoLoad { get; set; }
+
         public DateTime ChannelTimeStamp { get; set; }
 
+        [MaxLength(500)]
         public string VideoFolder { get; set; }
+
+        [Range(0, 1)]
         public int AutoLoadVideo { get; set; }
 
         [InverseProperty("VideoReg")]

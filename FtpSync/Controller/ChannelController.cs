@@ -9,6 +9,13 @@ namespace FtpSync.Controller
 {
     public class ChannelController : ApiController
     {
+        [HttpPost]
+        public void Sync(DateTime start, DateTime end)
+        {
+            
+        }
+
+
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };

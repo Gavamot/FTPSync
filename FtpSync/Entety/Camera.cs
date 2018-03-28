@@ -15,13 +15,17 @@ namespace FtpSync.Entety
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [ForeignKey("VideoReg")]
+        [Required]
         public int VideoRegId { get; set; }
 
-        //[ForeignKey("VideoRegId")]
+        [Required]
+        [ForeignKey("VideoRegId")]
         public VideoReg VideoReg { get; set; }
 
+        [Required]
+        [Range(0, 16)]
         public int Num { get; set; }
+
         // 2018-03-23 21:59:25.9691178
         public DateTime TimeStamp { get; set; }
 

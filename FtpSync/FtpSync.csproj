@@ -56,6 +56,9 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="FakeItEasy, Version=4.0.0.0, Culture=neutral, PublicKeyToken=eff28e2146d5fd2c, processorArchitecture=MSIL">
+      <HintPath>..\packages\FakeItEasy.4.5.1\lib\net45\FakeItEasy.dll</HintPath>
+    </Reference>
     <Reference Include="FluentFTP, Version=19.1.3.0, Culture=neutral, PublicKeyToken=f4af092b1d8df44f, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentFTP.19.1.3\lib\net45\FluentFTP.dll</HintPath>
     </Reference>
@@ -122,11 +125,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Real\FileFactory.cs" />
+    <Compile Include="Real\FtpLoaderFactory.cs" />
+    <Compile Include="Rep\RepVideoReg.cs" />
+    <Compile Include="TestBase.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Controller\ChannelController.cs" />
-    <Compile Include="Real\RangeFileGetter.cs" />
-    <Compile Include="Value\File.cs" />
-    <Compile Include="Value\Folder.cs" />
+    <Compile Include="Real\File.cs" />
+    <Compile Include="Value\RemoteFolder.cs" />
     <Compile Include="WebApi\CustomActionFilter.cs" />
     <Compile Include="DataContext.cs" />
     <Compile Include="Entety\Camera.cs" />
@@ -142,10 +148,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Real\FilesIntervalGetter.cs" />
-    <Compile Include="Real\FtpChannelsLoader.cs" />
     <Compile Include="Real\FtpLoader.cs" />
-    <Compile Include="Real\FtpVideoLoader.cs" />
     <Compile Include="Real\TestVideoRegRepositoty.cs" />
     <Compile Include="WebApi\SecondMiddleware.cs" />
     <Compile Include="WebApi\Startup.cs" />
@@ -172,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
