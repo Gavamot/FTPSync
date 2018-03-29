@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FtpSync.Entety
 {
     [Table("Camera")]
-    class Camera
+    public class Camera
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -20,6 +21,7 @@ namespace FtpSync.Entety
 
         [Required]
         [ForeignKey("VideoRegId")]
+        [IgnoreDataMember]
         public VideoReg VideoReg { get; set; }
 
         [Required]
@@ -27,7 +29,7 @@ namespace FtpSync.Entety
         public int Num { get; set; }
 
         // 2018-03-23 21:59:25.9691178
-        public DateTime TimeStamp { get; set; }
+        public DateTime? TimeStamp { get; set; }
 
         public override string ToString()
         {

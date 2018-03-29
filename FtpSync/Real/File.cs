@@ -51,7 +51,7 @@ namespace FtpSync.Value
         public override string Exst => ".json";
         public override string ToString()
         {
-            return $"{DT:yyyy-MM-ddTHH-mm-ss}_{Model}_{Number}_{Release}_{Serial}{Exst}";
+            return $"{DT:yyyy-M-dTHH-mm-ss}_{Model}_{Number}_{Release}_{Serial}{Exst}";
         }
     }
 
@@ -74,7 +74,7 @@ namespace FtpSync.Value
         public string Exst => ".mp4";
         public override string ToString()
         {
-            return $"{DT:yyyy-MM-ddTHH-mm-ss}_{Model}_{Number}_{Release}_{Serial}{Exst}";
+            return $"{DT:yyyy-M-dTHH-mm-ss}_{Model}_{Number}_{Release}_{Serial}{Exst}";
         }
     }
 

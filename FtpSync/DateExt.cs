@@ -9,13 +9,16 @@ namespace FtpSync
 {
     static class DateExt
     {
-
-        public const string DefDateFormet = "yyyy-MM-ddTHH:mm:ss";
-
-        public static DateTime ToDate(this string self, string format = DefDateFormet)
+        public const string DefDateFormat = "yyyy/M/dTHH:mm:ss";
+ 
+        public static DateTime ToDate(this string self, string format = DefDateFormat)
         {
-            return DateTime.ParseExact(self, format, CultureInfo.InvariantCulture);
+            return DateTime.ParseExact(self, format, CultureInfo.CurrentCulture);
         }
 
+        public static string ToNormalString(this DateTime self)
+        {
+            return self.ToString("yyyy/M/d HH:mm:ss");
+        }
     }
 }

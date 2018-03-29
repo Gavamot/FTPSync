@@ -17,8 +17,7 @@ namespace FtpSync
 
             config.Routes.MapHttpRoute(
                 "DefaultApi",
-                "api/{controller}/{id}",
-                new { id = RouteParameter.Optional });
+                "{controller}/{action}");
 
             var builder = new ContainerBuilder();
 

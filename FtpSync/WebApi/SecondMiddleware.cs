@@ -15,8 +15,6 @@ namespace FtpSync
 
         public override async Task Invoke(IOwinContext context)
         {
-
-
             await Next.Invoke(context);
         }
     }

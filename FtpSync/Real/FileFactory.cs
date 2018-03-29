@@ -19,7 +19,7 @@ namespace FtpSync.Real
             string fname = Path.GetFileNameWithoutExtension(f.Name);
             string[] str = fname.Split('_');
 
-            DateTime dt = DateTime.ParseExact(str[0], "yyyy.MM.ddTHH.mm.ss", CultureInfo.InvariantCulture);
+            DateTime dt = str[0].ToDate("yyyy.MM.ddTHH.mm.ss");
             int model = int.Parse(str[1]);
             int number = int.Parse(str[2]);
             int release = int.Parse(str[3]);
@@ -49,7 +49,7 @@ namespace FtpSync.Real
                     };
                 }
                 default:
-                    throw new Exception($"Неизветное расширение файла ({f.Extension})");
+                    throw new FormatException($"Неизветное расширение файла ({f.Extension})");
             }
 
         }

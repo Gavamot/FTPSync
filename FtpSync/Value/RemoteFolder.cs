@@ -15,11 +15,6 @@ namespace FtpSync.Value
         public DateTime YyyyMMddHH { get; set; }
         public FtpListItem File { get; set; }
 
-        public bool BitwinDate(DateTime start, DateTime end)
-        {
-            return start <= YyyyMMddHH && end >= YyyyMMddHH;
-        }
-
         public string GetLocalPath(string root, int brigadeCode)
         {
             return Path.Combine(
@@ -50,7 +45,7 @@ namespace FtpSync.Value
             return File.FullName;
         }
 
-        public static List<RemoteFolder> GetAllHoursFolders(FtpClient client, string folder, Func<RemoteFolder, bool> func = null)
+        public static List<RemoteFolder> GetAllHoursFolders(FtpClient client, string folder, Func<DateTime, bool> func = null)
         {
             var res = new List<RemoteFolder>();
             void AddFolders(FtpListItem f, int recurs)
@@ -66,7 +61,7 @@ namespace FtpSync.Value
                     }
                     else
                     {
-                        if (func(item))
+                        if (func(item.YyyyMMddHH))
                             res.Add(item);
                     }
                 }

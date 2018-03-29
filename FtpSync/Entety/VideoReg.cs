@@ -7,13 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FtpSync.Value;
+using Newtonsoft.Json;
 
 namespace FtpSync.Entety
 {
     [Table("VideoReg")]
-    class VideoReg
+    public class VideoReg
     {
-        [Key]
         public int Id { get; set; }
 
         [Required]
@@ -31,6 +31,8 @@ namespace FtpSync.Entety
 
         [MaxLength(50)]
         public string Password { get; set; }
+
+        [JsonIgnore]
         public FtpSettings FtpSettings => new FtpSettings(Ip, User, Password);
 
         // Каталоги для перекачки если null то незакачивать
@@ -40,7 +42,7 @@ namespace FtpSync.Entety
         [Range(0, 1)]
         public int ChannelAutoLoad { get; set; }
 
-        public DateTime ChannelTimeStamp { get; set; }
+        public DateTime? ChannelTimeStamp { get; set; }
 
         [MaxLength(500)]
         public string VideoFolder { get; set; }
@@ -49,7 +51,7 @@ namespace FtpSync.Entety
         public int AutoLoadVideo { get; set; }
 
         [InverseProperty("VideoReg")]
-        public List<Camera> Camers { get; set; }
+        public List<Camera> Camers { get; set; } = new List<Camera>();
 
         public override string ToString()
         {

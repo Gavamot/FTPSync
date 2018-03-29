@@ -6,6 +6,7 @@ using System.Net.Http.Formatting;
 using System.Threading.Tasks;
 using FluentFTP;
 using FtpSync.Value;
+using Ninject;
 using NLog;
 
 namespace FtpSync.Real
@@ -15,24 +16,18 @@ namespace FtpSync.Real
         protected static readonly Logger logger = LogManager.GetCurrentClassLogger();
         protected FtpSettings Settings { get; private set; }
         protected FtpClient Client { get; private set; }
-        public string LocalRoot { get; protected set; }
-        public string RemoteRoot { get; protected set; }
-        public int BrigadeCode { get; protected set; }
 
         public FtpLoader() { }
-        public FtpLoader(FtpSettings settings, int brigadeCode, string remoteRoot, string localRoot)
+        public FtpLoader(FtpSettings settings)
         {
             this.Settings = settings;
-            this.BrigadeCode = brigadeCode;
-            this.RemoteRoot = remoteRoot;
-            this.LocalRoot = localRoot;
             this.Client = new FtpClient(settings.Ip);
             this.Client.Credentials = new NetworkCredential(settings.User, settings.Password);
         }
 
-        public static FtpLoader Start(FtpSettings settings, int brigadeCode, string remoteRoot, string localRoot)
+        public static FtpLoader Start(FtpSettings settings)
         {
-            var res = new FtpLoader(settings, brigadeCode, remoteRoot, localRoot);
+            var res = new FtpLoader(settings);
             res.Connect();
             return res;
         }
@@ -47,27 +42,43 @@ namespace FtpSync.Real
             return Client.DownloadFile(localPath, remotePath);
         }
 
-        public void DownloadFilesByInterval(DateTime start, DateTime end)
+        public void DownloadFilesByInterval(DateTimeInterval interval, string remoteRoot, string localRoot)
         {
             // Получаем все каталоги отфильтрованные по диапозону дат [час]
-            List<RemoteFolder> remoteFolders = RemoteFolder.GetAllHoursFolders(Client, RemoteRoot, folder => folder.BitwinDate(start, end));
-           
+            List<RemoteFolder> remoteFolders = RemoteFolder.GetAllHoursFolders(Client, remoteRoot, interval.BitwinDate );
             foreach (RemoteFolder remoteFolder in remoteFolders)
             {
                 // Папка куда копировать файлы [час]
-                string localFolder = remoteFolder.GetLocalPath(LocalRoot, BrigadeCode);
                 foreach (FtpListItem remoteFile in Client.GetListing(remoteFolder.ToString()))
                 {
                     if (remoteFile.Type == FtpFileSystemObjectType.File)
                     {
-                        string localFile = Path.Combine(localFolder, remoteFile.Name);
-                        IFile f = new FileFactory().Create(localFile);
+                        string localFile = Path.Combine(localRoot, remoteFile.Name);
+
+                        // Проверяем файл на соответствие формату
+                        IFile f = new FileChannelJson();
+                        try
+                        {
+                            f = new FileFactory().Create(remoteFile.Name);
+                        }
+                        catch (FormatException e)
+                        {
+                            logger.Error(e, $"{ localFile } haves bad format [ERROR]");
+                            continue;
+                        }
 
                         // Файл полностью записан и его нет на диске существует
                         if (f.IsComplete && !System.IO.File.Exists(localFile))
                         {
-                            Client.DownloadFile(localFile, remoteFile.FullName);
-                            logger.Info($"{f} [OK]");
+                            try
+                            {
+                                Client.DownloadFile(localFile, remoteFile.FullName);
+                                logger.Info($"{f} [OK]");
+                            }
+                            catch (Exception e)
+                            {
+                                logger.Error(e, $"copy {f} [ERROR]");
+                            }
                         }
                         else
                         {

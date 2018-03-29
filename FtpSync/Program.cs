@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.SQLite;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using FtpSync.Entety;
@@ -49,51 +51,70 @@ namespace FtpSync
             logger.Error(exception);
         }
 
-       
+        // Установить культуру 
+        static void SetDefaultCulture(CultureInfo culture)
+        {
+            Type type = typeof(CultureInfo);
+
+            try
+            {
+                type.InvokeMember("s_userDefaultCulture",
+                    BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Static,
+                    null,
+                    culture,
+                    new object[] { culture });
+
+                type.InvokeMember("s_userDefaultUICulture",
+                    BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Static,
+                    null,
+                    culture,
+                    new object[] { culture });
+            }
+            catch { }
+
+            try
+            {
+                type.InvokeMember("m_userDefaultCulture",
+                    BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Static,
+                    null,
+                    culture,
+                    new object[] { culture });
+
+                type.InvokeMember("m_userDefaultUICulture",
+                    BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Static,
+                    null,
+                    culture,
+                    new object[] { culture });
+            }
+            catch { }
+        }
+
+
         // Получить все катологи  
         static void Main(string[] args)
         {
-            //var a = new FtpListItem("/channel");
-            //Inject.SetDependenciesTest();
+            //  Глобальный обработчик ошибок
             AppDomain.CurrentDomain.UnhandledException += ProcessException;
 
-            // Первая инициализация для чтобы потом работало быстрее
-            var t = ChannelTaskManager.Instance;
+            // Установить культуру 
+            var culture = new CultureInfo("ru-RU");
+            string a = culture.DateTimeFormat.FullDateTimePattern;
+            culture.DateTimeFormat.FullDateTimePattern = DateExt.DefDateFormat;
+
+            culture.NumberFormat.NumberDecimalSeparator = ".";
+            SetDefaultCulture(culture);
+           
             // Запускаем web Api 2
             var host = WebApp.Start<Startup>(config.Host);
+            logger.Info($"Wep Api 2 started on host {config.Host}");
 
-            //DateTime start = new DateTime(2018, 5, 2, 17, 0, 0);
-            //DateTime end = new DateTime(2018, 5, 2, 18, 0, 0);
-
-            //var video = new VideoReg
-            //{
-            //    Ip = "192.168.1.158",
-            //    Password = "123",
-            //    User = "oem",
-            //    BrigadeCode = 123,
-            //    ChannelFolder = "/channels"
-            //};
-
-            //var ftp = FtpLoader.Start(video.FtpSettings, video.BrigadeCode, video.ChannelFolder, config.ChannelFolder);
-            //ftp.DownloadFilesByInterval(start, end);
-            
-            //DownloadByInterval(brigadeCode, start, end);
-            // client.DownloadFile(@"C:\MyVideo_2.mp4", "/htdocs/big2.txt");
-            Console.ReadKey();
+            while (true)
+            {
+                Console.ReadKey();
+            }
         }
 
-        // Каскадное удалене
-        // Извлечь нужного покупателя из таблицы вместе с заказами
-        //Customer customer = context.Customers
-        //        .Include(c => c.Orders)
-        //        .FirstOrDefault(c => c.FirstName == "Василий");
-
-        //    // Удалить этого покупателя
-        //    if (customer != null)
-        //{
-        //    context.Customers.Remove(customer);
-        //    context.SaveChanges();
-        //}
+      
 
     static void TestWebApi()
         {

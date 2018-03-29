@@ -13,6 +13,7 @@ namespace FtpSync
     {
         public DataContext() : base("DefaultConnection")
         {
+            Database.SetInitializer<DataContext>(null);
         }
 
         public DbSet<Camera> Camera { get; set; }

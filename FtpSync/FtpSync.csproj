@@ -125,15 +125,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TaskManager\VideoTaskManager.cs" />
+    <Compile Include="Controller\RawModel\ChannelIntervalModel.cs" />
+    <Compile Include="Controller\VideoController.cs" />
+    <Compile Include="Controller\MyController.cs" />
+    <Compile Include="Controller\RawModel\VideoIntervalModel.cs" />
+    <Compile Include="Controller\VideoRegController.cs" />
     <Compile Include="DateExt.cs" />
     <Compile Include="Real\FileFactory.cs" />
     <Compile Include="Real\FtpLoaderFactory.cs" />
-    <Compile Include="Rep\RepVideoReg.cs" />
-    <Compile Include="ChannelTaskManager.cs" />
+    <Compile Include="TaskManager\ChannelTaskManager.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Controller\ChannelController.cs" />
     <Compile Include="Real\File.cs" />
+    <Compile Include="Value\Interval.cs" />
     <Compile Include="Value\RemoteFolder.cs" />
     <Compile Include="WebApi\CustomActionFilter.cs" />
     <Compile Include="DataContext.cs" />
@@ -164,7 +170,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="db.sqlite">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="NLog.xsd">
       <SubType>Designer</SubType>
