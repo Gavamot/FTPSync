@@ -24,9 +24,9 @@ namespace FtpSync.Controller
             }
 
             // Выполнение операции
-            if (ChannelTaskManager.Instance.SyncChannelsByPeriod(reg, model.Interval))
+            if (VideoTaskManager.Instance.SyncChannelsByPeriod(reg, model.CameraNum, model.Interval))
                 return Ok();
-            return BadRequest($"{model.BrigadeCode}({model.Interval}) - [ALREADY EXECUTE]");
+            return BadRequest($"{model.BrigadeCode} cam={model.CameraNum}({model.Interval}) - [ALREADY EXECUTE]");
         }
 
 

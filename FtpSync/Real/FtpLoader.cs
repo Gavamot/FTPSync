@@ -53,8 +53,8 @@ namespace FtpSync.Real
                 {
                     if (remoteFile.Type == FtpFileSystemObjectType.File)
                     {
-                        string localFile = Path.Combine(localRoot, remoteFile.Name);
-
+                        string localFile = remoteFile.FullName.Replace("/", "\\")
+                            .Replace(remoteRoot.Replace("/", "\\"), localRoot.Replace("/", "\\")); 
                         // Проверяем файл на соответствие формату
                         IFile f = new FileChannelJson();
                         try

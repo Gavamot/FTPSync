@@ -37,7 +37,7 @@ namespace FtpSync.Real
                 };
                 case ".mp4":
                 {
-                    int? durationSec = str.Length == 5 ? (int?)int.Parse(str[5]) : null;  
+                    int? durationSec = str.Length > 5 ? (int?)int.Parse(str[5]) : null;  
                     return new FileVdeoMp4
                     {
                         DT = dt,

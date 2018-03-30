@@ -25,8 +25,6 @@ namespace FtpSync.Controller
                 return Ok();
             return BadRequest($"{model.BrigadeCode}({model.Interval}) - [ALREADY EXECUTE]");
         }
-
-
     }
 
 }
