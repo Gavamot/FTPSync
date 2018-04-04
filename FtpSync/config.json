@@ -1,0 +1,7 @@
+﻿{
+  "VideoFolder": "D:\\video\\",
+  "ChannelFolder": "D:\\channels\\",
+  "ChannelAutoDelayMs": 60000,
+  "VideoAutoDelayMs": 60000,
+  "Host": "http://localhost:9001/"
+}

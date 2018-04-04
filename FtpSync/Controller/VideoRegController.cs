@@ -13,6 +13,12 @@ namespace FtpSync.Controller
         {
             using (db)
             {
+                videoReg.Camers = new List<Camera>();
+                for (int i = 0; i < 10; i++)
+                {
+                    var cam = new Camera {Num = i};
+                    videoReg.Camers.Add(cam);
+                }
                 db.VideoReg.Add(videoReg);
                 db.SaveChanges();
             }
@@ -25,7 +31,6 @@ namespace FtpSync.Controller
             using (db)
             {
                 var v = db.VideoReg.FirstOrDefault(x => x.Id == videoReg.Id);
-
                 if (v == null)
                     return BadRequest("The video registrator not exsist.");
 
@@ -38,8 +43,6 @@ namespace FtpSync.Controller
                 v.ChannelTimeStamp = videoReg.ChannelTimeStamp;
                 v.Password = videoReg.Password;
                 v.User = videoReg.User;
-                v.Camers = videoReg.Camers;
-
                 db.SaveChanges();
             }
             return Ok();
@@ -84,10 +87,11 @@ namespace FtpSync.Controller
         {
             using (db)
             {
-                var res = db.VideoReg.ToList();
+                var res = db.VideoReg
+                    .Include(x=>x.Camers)
+                    .ToList();
                 return res;
             }
-            
         }
     }
 }

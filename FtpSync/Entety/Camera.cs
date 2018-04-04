@@ -28,12 +28,15 @@ namespace FtpSync.Entety
         [Range(0, 9)]
         public int Num { get; set; }
 
+        [Range(0, 1)]
+        public int AutoLoadVideo { get; set; }
+
         // 2018-03-23 21:59:25.9691178
         public DateTime? TimeStamp { get; set; }
 
         public override string ToString()
         {
-            return $"{Id}) cam {Num} TimeStamp = {TimeStamp:yyyy-MM-dd HH:mm:ss}";
+            return $"{Id}) cam {Num} TimeStamp = {TimeStamp:yyyy-MM-dd HH:mm:ss} auto = {AutoLoadVideo}";
         }
     }
 }

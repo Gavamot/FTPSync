@@ -6,6 +6,7 @@ using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
+using FtpSync.Controller.RawModel;
 
 namespace FtpSync.Controller
 {
@@ -14,16 +15,33 @@ namespace FtpSync.Controller
         [HttpPost]
         public IHttpActionResult SyncByPeriod([FromBody] VideoIntervalModel model)//(int brigadeCode, string start, string end)
         {
-            // Поиск видеорегистратора в базе
-            var reg = db.VideoReg.FirstOrDefault(x => x.BrigadeCode == model.BrigadeCode);
-            if (reg == null)
+            using (db)
             {
-                return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
+                // Поиск видеорегистратора в базе
+                var reg = db.VideoReg.FirstOrDefault(x => x.BrigadeCode == model.BrigadeCode);
+                if (reg == null)
+                {
+                    return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
+                }
+                // Выполнение операции
+                if (ChannelTaskManager.Instance.SyncChannelsByPeriod(reg, model.Interval))
+                    return Ok();
+                return BadRequest($"{model.BrigadeCode}({model.Interval}) - [ALREADY EXECUTE]");
             }
-            // Выполнение операции
-            if (ChannelTaskManager.Instance.SyncChannelsByPeriod(reg, model.Interval))
-                return Ok();
-            return BadRequest($"{model.BrigadeCode}({model.Interval}) - [ALREADY EXECUTE]");
+        }
+
+        [HttpPost]
+        public IHttpActionResult SetTimeStamp([FromBody] TimeStampChannelModel model)
+        {
+            using (db)
+            {
+                var reg = db.VideoReg.FirstOrDefault(x => x.BrigadeCode == model.BrigadeCode);
+                if(reg == null)
+                    return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
+                reg.ChannelTimeStamp = model.TimeStamp;
+                db.SaveChanges();
+            }
+            return Ok();
         }
     }
 

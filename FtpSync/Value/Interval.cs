@@ -24,6 +24,11 @@ namespace FtpSync.Value
             return Start <= dt && End >= dt;
         }
 
+        public static DateTimeInterval GetFullInterval()
+        {
+            return new DateTimeInterval(DateTime.MinValue, DateTime.MaxValue);
+        }
+
         public static bool operator == (DateTimeInterval interval1, DateTimeInterval interval2)
         {
             return 

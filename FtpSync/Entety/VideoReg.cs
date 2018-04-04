@@ -47,18 +47,18 @@ namespace FtpSync.Entety
         [MaxLength(500)]
         public string VideoFolder { get; set; }
 
-        [Range(0, 1)]
-        public int AutoLoadVideo { get; set; }
-
+        /// <summary>
+        /// Добавил сразу же камеры с 0 по 10
+        /// </summary>
         [InverseProperty("VideoReg")]
-        public List<Camera> Camers { get; set; } = new List<Camera>();
+        public List<Camera> Camers { get; set; }
 
         public override string ToString()
         {
             string res = $@"{Id}) BrigadeCode={BrigadeCode}
                 ip={Ip}  User={User}  Password={Password}
                 ChannelFolder={ChannelFolder}  ChannelAutoLoad={ChannelAutoLoad}  ChannelTimeStamp={ChannelTimeStamp}
-                VideoFolder={VideoFolder}  AutoLoadVideo={AutoLoadVideo}";
+                VideoFolder={VideoFolder} ";
             foreach (var c in Camers)
             {
                 res += $"\n\r{c}";

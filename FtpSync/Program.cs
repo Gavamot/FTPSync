@@ -1,23 +1,14 @@
-﻿using FluentFTP;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.SQLite;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using FtpSync.Entety;
-using FtpSync.Real;
-using FtpSync.Value;
+using FtpSync.TaskManager;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using NLog;
-using NUnit.Framework;
 using File = System.IO.File;
 
 namespace FtpSync
@@ -39,6 +30,7 @@ namespace FtpSync
             }
             catch
             {
+                logger.Warn($"Config file [{PathConfig}] not found or haves the bad format.");
                 res = new Config();
             }
             return res;
@@ -89,7 +81,6 @@ namespace FtpSync
             catch { }
         }
 
-
         // Получить все катологи  
         static void Main(string[] args)
         {
@@ -98,12 +89,12 @@ namespace FtpSync
 
             // Установить культуру 
             var culture = new CultureInfo("ru-RU");
-            string a = culture.DateTimeFormat.FullDateTimePattern;
             culture.DateTimeFormat.FullDateTimePattern = DateExt.DefDateFormat;
-
             culture.NumberFormat.NumberDecimalSeparator = ".";
             SetDefaultCulture(culture);
-           
+
+            StartAuto();
+
             // Запускаем web Api 2
             var host = WebApp.Start<Startup>(config.Host);
             logger.Info($"Wep Api 2 started on host {config.Host}");
@@ -114,9 +105,32 @@ namespace FtpSync
             }
         }
 
-      
+       
 
-    static void TestWebApi()
+        static void StartAuto()
+        {
+            using (var db = new DataContext())
+            {
+                foreach (var reg in db.VideoReg)
+                {
+                    if (reg.ChannelAutoLoad == 1)
+                    {
+                        AutoLoadChannelTaskManager.Instance.OnAutoload(reg.BrigadeCode);
+                    }
+                }
+
+                foreach (var cam in db.Camera)
+                {
+                    if (cam.AutoLoadVideo == 1)
+                    {
+                        AutoLoadVideoTaskManager.Instance.OnAutoload(cam.VideoReg.BrigadeCode, cam.Num);
+                    }
+                }
+              
+            }
+        }
+
+        static void TestWebApi()
         {
             logger.Info($"HOST {config.Host} was starting...");
             var client = new HttpClient();
@@ -145,7 +159,6 @@ namespace FtpSync
                     VideoFolder = "video",
                     ChannelFolder = "channel",
                     ChannelAutoLoad = 1,
-                    AutoLoadVideo = 2,
                     ChannelTimeStamp = DateTime.Now
                 };
 
@@ -154,6 +167,7 @@ namespace FtpSync
                     VideoReg = v,
                     Num = 1,
                     VideoRegId = 1,
+                    AutoLoadVideo = 0,
                     TimeStamp = DateTime.Now,
                 };
 
@@ -161,6 +175,7 @@ namespace FtpSync
                 {
                     VideoReg = v,
                     Num = 2,
+                    AutoLoadVideo = 0,
                     VideoRegId = 1,
                     TimeStamp = DateTime.Now
                 };
@@ -182,7 +197,5 @@ namespace FtpSync
 
             }
         }
-
-
     }
 }

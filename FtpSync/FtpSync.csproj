@@ -74,9 +74,6 @@
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Ninject, Version=3.3.4.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ninject.3.3.4\lib\net45\Ninject.dll</HintPath>
-    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.5.0\lib\net45\NLog.dll</HintPath>
     </Reference>
@@ -125,6 +122,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controller\RawModel\TimeStampChannelModel.cs" />
+    <Compile Include="Controller\RawModel\TimeStampVideoModel.cs" />
+    <Compile Include="MoreLinq\MoreEnumerable.MaxBy.cs" />
+    <Compile Include="Real\AutoFileLoader.cs" />
+    <Compile Include="Real\File\File.cs" />
+    <Compile Include="Real\File\FileChannelJson.cs" />
+    <Compile Include="Real\File\IFile.cs" />
+    <Compile Include="TaskManager\AutoLoadVideoTaskManager.cs" />
+    <Compile Include="TaskManager\AutoLoadChannelTaskManager.cs" />
     <Compile Include="TaskManager\VideoTaskManager.cs" />
     <Compile Include="Controller\RawModel\ChannelIntervalModel.cs" />
     <Compile Include="Controller\VideoController.cs" />
@@ -133,20 +139,20 @@
     <Compile Include="Controller\VideoRegController.cs" />
     <Compile Include="DateExt.cs" />
     <Compile Include="Real\FileFactory.cs" />
-    <Compile Include="Real\FtpLoaderFactory.cs" />
     <Compile Include="TaskManager\ChannelTaskManager.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Controller\ChannelController.cs" />
-    <Compile Include="Real\File.cs" />
+    <Compile Include="Real\File\FileVdeoMp4.cs" />
+    <Compile Include="Value\Folder.cs" />
     <Compile Include="Value\Interval.cs" />
+    <Compile Include="Value\LocalFolder.cs" />
     <Compile Include="Value\RemoteFolder.cs" />
     <Compile Include="WebApi\CustomActionFilter.cs" />
     <Compile Include="DataContext.cs" />
     <Compile Include="Entety\Camera.cs" />
     <Compile Include="Entety\VideoReg.cs" />
     <Compile Include="WebApi\FirstMiddleware.cs" />
-    <Compile Include="Inject.cs" />
     <Compile Include="Interface\ISourceReader.cs" />
     <Compile Include="Interface\IVideoRegRepository.cs" />
     <Compile Include="Program.cs" />
@@ -169,6 +175,9 @@
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="db.sqlite">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

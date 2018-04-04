@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
+using FtpSync.Real.File;
 using FtpSync.Value;
 using NUnit.Framework;
 
@@ -40,7 +41,7 @@ namespace FtpSync.Real
                     int? durationSec = str.Length > 5 ? (int?)int.Parse(str[5]) : null;  
                     return new FileVdeoMp4
                     {
-                        DT = dt,
+                        Pdt = dt,
                         Model = model,
                         Number = number,
                         Release = release,

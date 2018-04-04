@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http.Formatting;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
+using FtpSync.Real.File;
 using FtpSync.Value;
-using Ninject;
 using NLog;
 
 namespace FtpSync.Real
@@ -42,15 +43,26 @@ namespace FtpSync.Real
             return Client.DownloadFile(localPath, remotePath);
         }
 
-        public void DownloadFilesByInterval(DateTimeInterval interval, string remoteRoot, string localRoot)
+        /// <summary>
+        /// Загружает по ftp файлы за переданный интервал 
+        /// </summary>
+        /// <param name="interval">временной интервал</param>
+        /// <param name="remoteRoot">удаленный каталог</param>
+        /// <param name="localRoot">куда копировать</param>
+        /// <param name="token">Токен для отмены</param>
+        /// <returns>Возвращает список скопированных файлов</returns>
+        public List<IFile> DownloadFilesByInterval(DateTimeInterval interval, string remoteRoot, string localRoot, CancellationToken? token = null)
         {
             // Получаем все каталоги отфильтрованные по диапозону дат [час]
             List<RemoteFolder> remoteFolders = RemoteFolder.GetAllHoursFolders(Client, remoteRoot, interval.BitwinDate );
+            var res = new List<IFile>();
             foreach (RemoteFolder remoteFolder in remoteFolders)
             {
                 // Папка куда копировать файлы [час]
                 foreach (FtpListItem remoteFile in Client.GetListing(remoteFolder.ToString()))
                 {
+                    token?.ThrowIfCancellationRequested();
+
                     if (remoteFile.Type == FtpFileSystemObjectType.File)
                     {
                         string localFile = remoteFile.FullName.Replace("/", "\\")
@@ -67,12 +79,13 @@ namespace FtpSync.Real
                             continue;
                         }
 
-                        // Файл полностью записан и его нет на диске существует
+                        // Файл полностью записан или его нет на диске
                         if (f.IsComplete && !System.IO.File.Exists(localFile))
                         {
                             try
                             {
                                 Client.DownloadFile(localFile, remoteFile.FullName);
+                                res.Add(f);
                                 logger.Info($"{f} [OK]");
                             }
                             catch (Exception e)
@@ -87,6 +100,7 @@ namespace FtpSync.Real
                     }
                 }
             }
+            return res;
         }
 
         public void Disconnect()

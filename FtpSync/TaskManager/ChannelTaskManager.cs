@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FtpSync.Entety;
 using FtpSync.Real;
@@ -18,6 +19,7 @@ namespace FtpSync
             public int BrigadeCode { get; set; }
             public DateTimeInterval Interval { get; set; }
             public Task Task { get; set; }
+            public CancellationTokenSource Cts { get; set; }
         }
 
         private static readonly ChannelTaskManager instance = new ChannelTaskManager();
@@ -31,27 +33,43 @@ namespace FtpSync
 
         public bool SyncChannelsByPeriod(VideoReg video, DateTimeInterval interval)
         {
-            ChannelTask newTask = new ChannelTask
+            var cts = new CancellationTokenSource();
+            var task = new Task(() =>
             {
-                BrigadeCode = video.BrigadeCode,
-                Interval = interval,
-                Task = new Task(() =>
+                try
                 {
                     // Загружаем данные за необходимый интревал
                     // video.BrigadeCode, video.ChannelFolder, channelFolder
                     var ftp = FtpLoader.Start(video.FtpSettings);
                     string localRoot = Path.Combine(channelFolder, video.BrigadeCode.ToString());
-                    ftp.DownloadFilesByInterval(interval, video.ChannelFolder, localRoot);
+                    ftp.DownloadFilesByInterval(interval, video.ChannelFolder, localRoot, cts.Token);
+                }
+                catch (OperationCanceledException e)
+                {
+                    logger.Warn(e, $"{video.BrigadeCode}  [{interval}] operation canseled");
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e);
+                }
 
-                    // Сннимаем задачу из списка задач
-                    lock (tasksLock)
-                    {
-                        tasks.RemoveAll(t =>
-                            t.BrigadeCode == video.BrigadeCode &&
-                            t.Interval == interval);
-                    }
-                })
+                // Сннимаем задачу из списка задач
+                lock (tasksLock)
+                {
+                    tasks.RemoveAll(t =>
+                        t.BrigadeCode == video.BrigadeCode &&
+                        t.Interval == interval);
+                }
+            }, cts.Token);
+
+            ChannelTask newTask = new ChannelTask
+            {
+                BrigadeCode = video.BrigadeCode,
+                Interval = interval,
+                Task = task,
+                Cts = cts 
             };
+
             lock (tasksLock)
             {
                 // Проверем выполняется ли в данный момент аналогичная задача если да то не надо ее дублировать

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FtpSync.Entety;
 using FtpSync.Real;
@@ -20,6 +21,7 @@ namespace FtpSync
             public DateTimeInterval Interval { get; set; }
             public int CameraNum { get; set; }
             public Task Task { get; set; }
+            public CancellationTokenSource Cts { get; set; }
         }
 
         private static readonly VideoTaskManager instance = new VideoTaskManager();
@@ -32,28 +34,44 @@ namespace FtpSync
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public bool SyncChannelsByPeriod(VideoReg video, int cameraNum, DateTimeInterval interval)
         {
-            var newTask = new VideolTask
+            var cts = new CancellationTokenSource();
+            var task = new Task(() =>
             {
-                BrigadeCode = video.BrigadeCode,
-                Interval = interval,
-                CameraNum = cameraNum,
-                Task = new Task(() =>
+                try
                 {
                     // Загружаем данные за необходимый интревал
                     var ftp = FtpLoader.Start(video.FtpSettings);
                     string removeRoot = Path.Combine(video.VideoFolder, cameraNum.ToString());
                     string localRoot = Path.Combine(videoFolder, video.BrigadeCode.ToString(), cameraNum.ToString());
-                    ftp.DownloadFilesByInterval(interval, removeRoot, localRoot);
-                    // Сннимаем задачу из списка задач
-                    lock (tasksLock)
-                    {
-                        tasks.RemoveAll(t =>
-                            t.BrigadeCode == video.BrigadeCode &&
-                            t.Interval == interval &&
-                            t.CameraNum == cameraNum);
-                    }
-                })
+                    ftp.DownloadFilesByInterval(interval, removeRoot, localRoot, cts.Token);
+                }
+                catch (OperationCanceledException e)
+                {
+                    logger.Warn(e, $"{video.BrigadeCode} ({cameraNum}) [{interval}] operation canseled");
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e);
+                }
+
+                // Сннимаем задачу из списка задач
+                lock (tasksLock)
+                {
+                    tasks.RemoveAll(t =>
+                        t.BrigadeCode == video.BrigadeCode &&
+                        t.Interval == interval &&
+                        t.CameraNum == cameraNum);
+                }
+            }, cts.Token);
+            var newTask = new VideolTask
+            {
+                BrigadeCode = video.BrigadeCode,
+                Interval = interval,
+                CameraNum = cameraNum,
+                Task = task,
+                Cts = cts
             };
+
             lock (tasksLock)
             {
                 // Проверем выполняется ли в данный момент аналогичная задача если да то не надо ее дублировать

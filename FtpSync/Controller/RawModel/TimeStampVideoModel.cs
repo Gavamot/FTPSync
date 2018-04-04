@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FtpSync.Real
+namespace FtpSync.Controller.RawModel
 {
-    class FtpLoaderFactory
+    public class TimeStampVideoModel : TimeStampChannelModel
     {
-
+        public int Num { get; set; }
     }
 }
