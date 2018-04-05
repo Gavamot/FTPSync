@@ -8,20 +8,28 @@ using System.Threading.Tasks;
 using FtpSync.Entety;
 using FtpSync.Real;
 using FtpSync.Value;
+using Newtonsoft.Json;
 using NLog;
 
 namespace FtpSync
 {
+    public class ChannelTask
+    {
+        [JsonProperty("brigadeCode")]
+        public int BrigadeCode { get; set; }
+
+        [JsonProperty("interval")]
+        public DateTimeInterval Interval { get; set; }
+
+        [JsonIgnore]
+        public Task Task { get; set; }
+
+        [JsonIgnore]
+        public CancellationTokenSource Cts { get; set; }
+    }
+
     class ChannelTaskManager
     {
-        class ChannelTask
-        {
-            public int BrigadeCode { get; set; }
-            public DateTimeInterval Interval { get; set; }
-            public Task Task { get; set; }
-            public CancellationTokenSource Cts { get; set; }
-        }
-
         private static readonly ChannelTaskManager instance = new ChannelTaskManager();
         private ChannelTaskManager() { }
         public static ChannelTaskManager Instance => instance;
@@ -31,10 +39,12 @@ namespace FtpSync
         private readonly string channelFolder = Program.config.ChannelFolder;
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        public List<ChannelTask> GetAll => tasks;
+
         public bool SyncChannelsByPeriod(VideoReg video, DateTimeInterval interval)
         {
             var cts = new CancellationTokenSource();
-            var task = new Task(() =>
+            var task = new Task((token) =>
             {
                 try
                 {
@@ -42,7 +52,7 @@ namespace FtpSync
                     // video.BrigadeCode, video.ChannelFolder, channelFolder
                     var ftp = FtpLoader.Start(video.FtpSettings);
                     string localRoot = Path.Combine(channelFolder, video.BrigadeCode.ToString());
-                    ftp.DownloadFilesByInterval(interval, video.ChannelFolder, localRoot, cts.Token);
+                    ftp.DownloadFilesByInterval(interval, video.ChannelFolder, localRoot);
                 }
                 catch (OperationCanceledException e)
                 {

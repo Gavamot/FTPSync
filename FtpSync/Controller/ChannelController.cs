@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using FtpSync.Controller.RawModel;
+using FtpSync.TaskManager;
 
 namespace FtpSync.Controller
 {
@@ -42,6 +43,20 @@ namespace FtpSync.Controller
                 db.SaveChanges();
             }
             return Ok();
+        }
+
+        [HttpGet]
+        public List<ChannelTask> GetTasks()
+        {
+            List<ChannelTask> res = ChannelTaskManager.Instance.GetAll;
+            return res;
+        }
+
+        [HttpGet]
+        public List<AutoLoadChannelTask> GetAutoLoadTasks()
+        {
+            List<AutoLoadChannelTask> res = AutoLoadChannelTaskManager.Instance.GetAll;
+            return res;
         }
     }
 

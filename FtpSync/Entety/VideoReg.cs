@@ -39,8 +39,7 @@ namespace FtpSync.Entety
         [MaxLength(500)]
         public string ChannelFolder { get; set; }
 
-        [Range(0, 1)]
-        public int ChannelAutoLoad { get; set; }
+        public AutoLoadStatus ChannelAutoLoad { get; set; }
 
         public DateTime? ChannelTimeStamp { get; set; }
 

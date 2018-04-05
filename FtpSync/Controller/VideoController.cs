@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using FtpSync.Controller.RawModel;
+using FtpSync.TaskManager;
 
 namespace FtpSync.Controller
 {
@@ -50,6 +51,21 @@ namespace FtpSync.Controller
             }
             return Ok();
         }
+
+        [HttpGet]
+        public List<VideolTask> GetTasks()
+        {
+            List<VideolTask> res = VideoTaskManager.Instance.GetAll;
+            return res;
+        }
+
+        [HttpGet]
+        public List<AutoLoadVideoTask> GetAutoLoadTasks()
+        {
+            List<AutoLoadVideoTask> res = AutoLoadVideoTaskManager.Instance.GetAll;
+            return res;
+        }
+
     }
 
 }

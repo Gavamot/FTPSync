@@ -17,7 +17,5 @@ namespace FtpSync
             string json2 = JsonConvert.SerializeObject(obj2);
             Assert.AreEqual(json1, json2);
         }
-
-
     }
 }

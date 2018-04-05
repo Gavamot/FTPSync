@@ -25,15 +25,26 @@ namespace FtpSync.Value
         /// </summary>
         /// <param name="root">Корневой католог с годами</param>
         /// <returns>дата максимального файла </returns>
-        public static DateTime GetMaxDate(string root)
+        public static DateTime? GetMaxDate(string root)
         {
-            DirectoryInfo dir = new DirectoryInfo(root)
-                .GetFolderWithMaxValue()  // yyyy
-                .GetFolderWithMaxValue()  // MM
-                .GetFolderWithMaxValue()  // dd
-                .GetFolderWithMaxValue(); // HH
-            DateTime res = Parce(dir.FullName);
-            return res;
+            try
+            {
+                DirectoryInfo dir = new DirectoryInfo(root)
+                    .GetFolderWithMaxValue()  // yyyy
+                    .GetFolderWithMaxValue()  // MM
+                    .GetFolderWithMaxValue()  // dd
+                    .GetFolderWithMaxValue(); // HH
+                DateTime res = Parce(dir.FullName);
+                return res;
+            }
+            catch(InvalidOperationException e)
+            {
+                return null;
+            }
+            catch(Exception e)
+            {
+                return null;
+            }
         }
     }
 }

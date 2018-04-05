@@ -8,20 +8,28 @@ using System.Threading.Tasks;
 using FtpSync.Entety;
 using FtpSync.Real;
 using FtpSync.Value;
+using Newtonsoft.Json;
 using NLog;
 
 namespace FtpSync.TaskManager
 {
+    public class AutoLoadVideoTask
+    {
+        [JsonProperty("brigadeCode")]
+        public int BrigadeCode { get; set; }
+
+        [JsonProperty("cameraNum")]
+        public int CameraNum { get; set; }
+
+        [JsonIgnore]
+        public Task Task { get; set; }
+
+        [JsonIgnore]
+        public CancellationTokenSource Cts { get; set; }
+    }
+
     class AutoLoadVideoTaskManager
     {
-        class AutoLoadVideoTask
-        {
-            public int BrigadeCode { get; set; }
-            public int CameraNum { get; set; }
-            public Task Task { get; set; }
-            public CancellationTokenSource Cts { get; set; }
-        }
-
         private static readonly AutoLoadVideoTaskManager instance = new AutoLoadVideoTaskManager();
         private AutoLoadVideoTaskManager() { }
         public static AutoLoadVideoTaskManager Instance => instance;
@@ -30,7 +38,7 @@ namespace FtpSync.TaskManager
         volatile List<AutoLoadVideoTask> tasks = new List<AutoLoadVideoTask>();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        private void SetChannelAuto(int brigadeCode, int cameraNum, int val)
+        private void SetChannelAuto(int brigadeCode, int cameraNum, AutoLoadStatus val)
         {
             using (var db = new DataContext())
             {
@@ -44,7 +52,7 @@ namespace FtpSync.TaskManager
         {
             lock (tasksLock)
             {
-                SetChannelAuto(brigadeCode, 1, cameraNum);
+                SetChannelAuto(brigadeCode, cameraNum, AutoLoadStatus.on);
 
                 if (tasks.Any(x => x.BrigadeCode == brigadeCode && x.CameraNum == cameraNum) == false)
                 {
@@ -53,16 +61,21 @@ namespace FtpSync.TaskManager
                     t.CameraNum = cameraNum;
                     var cts = new CancellationTokenSource();
                     t.Cts = cts;
-                    t.Task = new Task(() =>
+                    t.Task = new Task((token) =>
                     {
-                        try
+                        while (true)
                         {
-                            var loader = AutoFileLoader.CreateChannelAutoLoader(brigadeCode);
-                            loader.Load(cts.Token);
-                        }
-                        catch (OperationCanceledException e)
-                        {
-                            logger.Info($"Task [{brigadeCode}] autoupdate video was canseled");
+                            cts.Token.ThrowIfCancellationRequested();
+                            try
+                            {
+                                var loader = AutoFileLoader.CreateChannelAutoLoader(brigadeCode);
+                                loader.Load();
+                            }
+                            catch (OperationCanceledException e)
+                            {
+                                logger.Info($"Task [{brigadeCode}] autoupdate video was canseled");
+                            }
+                            Task.Delay(Program.config.ChannelAutoDelayMs, cts.Token);
                         }
                     }, cts.Token);
                     t.Task.Start();
@@ -76,7 +89,7 @@ namespace FtpSync.TaskManager
             lock (tasksLock)
             {
                 // Выклычаем в базе
-                SetChannelAuto(brigadeCode, 0, cameraNum);
+                SetChannelAuto(brigadeCode, cameraNum, AutoLoadStatus.off);
                 
                 // Отменяем задачу
                 tasks.ForEach( x => x.Cts.Cancel() );
@@ -85,5 +98,7 @@ namespace FtpSync.TaskManager
                 tasks.RemoveAll( x => x.BrigadeCode == brigadeCode );
             }
         }
+
+        public List<AutoLoadVideoTask> GetAll => tasks;
     }
 }

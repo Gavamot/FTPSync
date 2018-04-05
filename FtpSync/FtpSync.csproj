@@ -124,6 +124,7 @@
   <ItemGroup>
     <Compile Include="Controller\RawModel\TimeStampChannelModel.cs" />
     <Compile Include="Controller\RawModel\TimeStampVideoModel.cs" />
+    <Compile Include="Entety\AutoLoadStatus.cs" />
     <Compile Include="MoreLinq\MoreEnumerable.MaxBy.cs" />
     <Compile Include="Real\AutoFileLoader.cs" />
     <Compile Include="Real\File\File.cs" />

@@ -44,8 +44,13 @@ namespace FtpSync
         }
 
         // Установить культуру 
-        static void SetDefaultCulture(CultureInfo culture)
+        static void SetDefaultCulture()
         {
+            // Установить культуру 
+            var culture = new CultureInfo("ru-RU");
+            culture.DateTimeFormat.FullDateTimePattern = DateExt.DefDateFormat;
+            culture.NumberFormat.NumberDecimalSeparator = ".";
+
             Type type = typeof(CultureInfo);
 
             try
@@ -87,11 +92,7 @@ namespace FtpSync
             //  Глобальный обработчик ошибок
             AppDomain.CurrentDomain.UnhandledException += ProcessException;
 
-            // Установить культуру 
-            var culture = new CultureInfo("ru-RU");
-            culture.DateTimeFormat.FullDateTimePattern = DateExt.DefDateFormat;
-            culture.NumberFormat.NumberDecimalSeparator = ".";
-            SetDefaultCulture(culture);
+            SetDefaultCulture();
 
             StartAuto();
 
@@ -105,28 +106,27 @@ namespace FtpSync
             }
         }
 
-       
-
         static void StartAuto()
         {
             using (var db = new DataContext())
             {
+
                 foreach (var reg in db.VideoReg)
                 {
-                    if (reg.ChannelAutoLoad == 1)
+                    if (reg.ChannelAutoLoad == AutoLoadStatus.on)
                     {
                         AutoLoadChannelTaskManager.Instance.OnAutoload(reg.BrigadeCode);
                     }
                 }
 
-                foreach (var cam in db.Camera)
-                {
-                    if (cam.AutoLoadVideo == 1)
-                    {
-                        AutoLoadVideoTaskManager.Instance.OnAutoload(cam.VideoReg.BrigadeCode, cam.Num);
-                    }
-                }
-              
+                //foreach (var cam in db.Camera)
+                //{
+                //    if (cam.AutoLoadVideo == AutoLoadStatus.on)
+                //    {
+                //        AutoLoadVideoTaskManager.Instance.OnAutoload(cam.VideoReg.BrigadeCode, cam.Num);
+                //    }
+                //}
+
             }
         }
 
@@ -158,7 +158,7 @@ namespace FtpSync
                     Password = "12",
                     VideoFolder = "video",
                     ChannelFolder = "channel",
-                    ChannelAutoLoad = 1,
+                    ChannelAutoLoad = AutoLoadStatus.on,
                     ChannelTimeStamp = DateTime.Now
                 };
 

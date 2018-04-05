@@ -28,8 +28,7 @@ namespace FtpSync.Entety
         [Range(0, 9)]
         public int Num { get; set; }
 
-        [Range(0, 1)]
-        public int AutoLoadVideo { get; set; }
+        public AutoLoadStatus AutoLoadVideo { get; set; }
 
         // 2018-03-23 21:59:25.9691178
         public DateTime? TimeStamp { get; set; }

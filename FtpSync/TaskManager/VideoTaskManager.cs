@@ -8,22 +8,32 @@ using System.Threading.Tasks;
 using FtpSync.Entety;
 using FtpSync.Real;
 using FtpSync.Value;
+using Newtonsoft.Json;
 using NLog;
 using NUnit.Framework.Constraints;
 
 namespace FtpSync
 {
+    public class VideolTask
+    {
+        [JsonProperty("brigadeCode")]
+        public int BrigadeCode { get; set; }
+
+        [JsonProperty("interval")]
+        public DateTimeInterval Interval { get; set; }
+
+        [JsonProperty("cameraNum")]
+        public int CameraNum { get; set; }
+
+        [JsonIgnore]
+        public Task Task { get; set; }
+
+        [JsonIgnore]
+        public CancellationTokenSource Cts { get; set; }
+    }
+
     class VideoTaskManager
     {
-        class VideolTask
-        {
-            public int BrigadeCode { get; set; }
-            public DateTimeInterval Interval { get; set; }
-            public int CameraNum { get; set; }
-            public Task Task { get; set; }
-            public CancellationTokenSource Cts { get; set; }
-        }
-
         private static readonly VideoTaskManager instance = new VideoTaskManager();
         private VideoTaskManager() { }
         public static VideoTaskManager Instance => instance;
@@ -35,7 +45,7 @@ namespace FtpSync
         public bool SyncChannelsByPeriod(VideoReg video, int cameraNum, DateTimeInterval interval)
         {
             var cts = new CancellationTokenSource();
-            var task = new Task(() =>
+            var task = new Task((token) =>
             {
                 try
                 {
@@ -43,7 +53,7 @@ namespace FtpSync
                     var ftp = FtpLoader.Start(video.FtpSettings);
                     string removeRoot = Path.Combine(video.VideoFolder, cameraNum.ToString());
                     string localRoot = Path.Combine(videoFolder, video.BrigadeCode.ToString(), cameraNum.ToString());
-                    ftp.DownloadFilesByInterval(interval, removeRoot, localRoot, cts.Token);
+                    ftp.DownloadFilesByInterval(interval, removeRoot, localRoot);
                 }
                 catch (OperationCanceledException e)
                 {
@@ -92,5 +102,8 @@ namespace FtpSync
             logger.Info($"SyncCameraByPeriod({video.BrigadeCode}, {cameraNum}, {interval}) [EXECUTION]");
             return true;
         }
+
+        public List<VideolTask> GetAll => tasks;
+        
     }
 }

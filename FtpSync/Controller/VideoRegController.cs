@@ -35,7 +35,6 @@ namespace FtpSync.Controller
                     return BadRequest("The video registrator not exsist.");
 
                 v.VideoFolder = videoReg.VideoFolder;
-                v.AutoLoadVideo = videoReg.AutoLoadVideo;
                 v.BrigadeCode = videoReg.BrigadeCode;
                 v.Ip = videoReg.Ip;
                 v.VideoFolder = videoReg.VideoFolder;
@@ -93,5 +92,6 @@ namespace FtpSync.Controller
                 return res;
             }
         }
+
     }
 }

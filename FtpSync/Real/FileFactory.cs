@@ -30,7 +30,7 @@ namespace FtpSync.Real
             {
                 case ".json": return new FileChannelJson
                 {
-                    DT = dt,
+                    Pdt = dt,
                     Model = model,
                     Number = number,
                     Release = release,
