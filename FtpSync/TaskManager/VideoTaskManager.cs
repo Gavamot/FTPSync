@@ -10,7 +10,6 @@ using FtpSync.Real;
 using FtpSync.Value;
 using Newtonsoft.Json;
 using NLog;
-using NUnit.Framework.Constraints;
 
 namespace FtpSync
 {
@@ -43,11 +42,11 @@ namespace FtpSync
         private readonly string videoFolder = Program.config.VideoFolder;
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public bool SyncChannelsByPeriod(VideoReg video, int cameraNum, Value.DateInterval interval)
+        public bool SyncChannelsByPeriod(VideoReg video, int cameraNum, DateInterval interval)
         {
             var cts = new CancellationTokenSource();
 
-            var task = new Task((token) =>
+            var task = new Task(() =>
             {
                 using(var ftp = FtpLoader.Start(video.FtpSettings))
                 {
@@ -60,7 +59,7 @@ namespace FtpSync
                     }
                     catch (OperationCanceledException e)
                     {
-                        logger.Warn(e, $"{video.BrigadeCode} ({cameraNum}) [{interval}] operation canseled");
+                        logger.Info(e, $"{video.BrigadeCode} ({cameraNum}) [{interval}] operation canseled");
                     }
                     catch (Exception e)
                     {
@@ -70,7 +69,7 @@ namespace FtpSync
                 // Сннимаем задачу из списка задач
                 lock (tasksLock)
                 {
-                    tasks.RemoveAll((Predicate<VideolTask>)(t =>
+                    tasks.RemoveAll((t =>
                         t.BrigadeCode == video.BrigadeCode &&
                         t.Interval == interval &&
                         t.CameraNum == cameraNum));
@@ -90,25 +89,28 @@ namespace FtpSync
             lock (tasksLock)
             {
                 // Проверем выполняется ли в данный момент аналогичная задача если да то не надо ее дублировать
-                VideolTask oldTask = tasks.FirstOrDefault((Func<VideolTask, bool>)(x =>
+                VideolTask oldTask = tasks.FirstOrDefault(
+                ( x =>
                     x.BrigadeCode == video.BrigadeCode &&
                     x.CameraNum == cameraNum &&
-                    x.Interval == interval));
+                    x.Interval == interval)
+                );
+
                 if (oldTask != null)
                 {
                     logger.Info($"SyncCameraByPeriod({video.BrigadeCode}, {cameraNum}, {interval}) [EXECUTION-MISS]");
                     return false;
                 }
+
                 // Ставим задачу на выполнение
                 tasks.Add(newTask);
+                newTask.Task.Start();
             }
-
-            newTask.Task.Start();
+      
             logger.Info($"SyncCameraByPeriod({video.BrigadeCode}, {cameraNum}, {interval}) [EXECUTION]");
             return true;
         }
 
-        public List<VideolTask> GetAll => tasks;
-        
+        public List<VideolTask> GetAll => tasks;   
     }
 }

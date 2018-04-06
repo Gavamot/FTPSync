@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Globalization;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading.Tasks;
 using FtpSync.Entety;
 using FtpSync.TaskManager;
 using Microsoft.Owin.Hosting;
@@ -98,7 +99,8 @@ namespace FtpSync
 
             SetDefaultCulture();
 
-            StartAuto();
+            StartAutoChannel();
+            StartAutoVideo();
 
             while (true)
             {
@@ -106,28 +108,39 @@ namespace FtpSync
             }
         }
 
-        static void StartAuto()
+        static void StartAutoChannel()
         {
-            using (var db = new DataContext())
+            Task.Factory.StartNew(() =>
             {
-
-                foreach (var reg in db.VideoReg)
+                using (var db = new DataContext())
                 {
-                    if (reg.ChannelAutoLoad == AutoLoadStatus.on)
+                    Parallel.ForEach(db.VideoReg, reg =>
                     {
-                        AutoLoadChannelTaskManager.Instance.OnAutoload(reg.BrigadeCode);
-                    }
+                        if (reg.ChannelAutoLoad == AutoLoadStatus.on)
+                        {
+                            AutoLoadChannelTaskManager.Instance.OnAutoload(reg.BrigadeCode);
+                        }
+                    });
                 }
+            });
+        }
 
-                //foreach (var cam in db.Camera)
-                //{
-                //    if (cam.AutoLoadVideo == AutoLoadStatus.on)
-                //    {
-                //        AutoLoadVideoTaskManager.Instance.OnAutoload(cam.VideoReg.BrigadeCode, cam.Num);
-                //    }
-                //}
-
-            }
+        static void StartAutoVideo()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                using (var db = new DataContext())
+                {
+                    Parallel.ForEach(db.Camera, cam =>
+                    {
+                        if (cam.AutoLoadVideo == AutoLoadStatus.on)
+                        {
+                            int brigadeCode = cam.VideoReg.BrigadeCode;
+                            AutoLoadVideoTaskManager.Instance.OnAutoload(brigadeCode, cam.Num);
+                        }
+                    });
+                }
+            });
         }
 
         static void TestWebApi()

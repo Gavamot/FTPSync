@@ -131,7 +131,7 @@ namespace FtpSync.Real
             }
             catch (Exception e)
             {
-                logger.Error(e, e.Message);
+                logger.Error(e, $"[{remoteRoot}] {e.Message}");
             }
 
             if (files.Any()) // Нет файлов
@@ -162,7 +162,7 @@ namespace FtpSync.Real
             }
             catch(Exception e)
             {
-                var a = 1;
+                logger.Error(e, e.Message);
             }
                 
             if (!files.Any()) // Нет файлов

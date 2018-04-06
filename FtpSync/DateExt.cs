@@ -26,5 +26,11 @@ namespace FtpSync
             return new DateTime(self.Year, self.Month, self.Day,
                                  self.Hour, 0, 0, self.Kind);
         }
+
+        public static DateTime RoundToEndHour(this DateTime self)
+        {
+            return new DateTime(self.Year, self.Month, self.Day,
+                                 self.Hour, 59, 59, self.Kind);
+        }
     }
 }

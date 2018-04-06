@@ -38,9 +38,6 @@ namespace FtpSync.Real
             Client.Connect();
         }
 
-        private void CopyFile(IFile f) { 
-}
-
         /// <summary>
         /// Загружает по ftp файлы за переданный интервал 
         /// </summary>
@@ -52,7 +49,7 @@ namespace FtpSync.Real
         public List<IFile> DownloadFilesByInterval(DateInterval interval, string remoteRoot, string localRoot, CancellationTokenSource cts = null)
         {
             // Получаем все каталоги отфильтрованные по диапозону дат [час]
-            List<RemoteFolder> remoteFolders = RemoteFolder.GetAllHoursFolders(Client, remoteRoot, interval.BitwinDate );
+            List<RemoteFolder> remoteFolders = RemoteFolder.GetAllHoursFolders(Client, remoteRoot, interval.BitwinDateFolder);
             var res = new List<IFile>();
             foreach (RemoteFolder remoteFolder in remoteFolders)
             {
@@ -87,7 +84,7 @@ namespace FtpSync.Real
                         {
                             //logger.Info($" {f} [MISS] - Exists in the server");
                         }
-                        else if(!System.IO.File.Exists(localFile)) // Нет в папке на сервере
+                        else if(System.IO.File.Exists(localFile)) // Нет в папке на сервере
                         {
                             logger.Info($" {f} [MISS] - exists in the server");
                             res.Add(f);

@@ -26,7 +26,7 @@ namespace FtpSync.Value
         }
     }
 
-    class Folder
+    public class Folder
     {
         public DateTime YyyyMMddHH { get; protected set; }
         public string Path { get; protected set; }

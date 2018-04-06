@@ -28,6 +28,12 @@ namespace FtpSync.Value
             return Start <= dt && End >= dt;
         }
 
+        public bool BitwinDateFolder(Folder f)
+        {
+            return Start.RoundToHour() <= f.YyyyMMddHH 
+                && End.RoundToEndHour() >= f.YyyyMMddHH;
+        }
+
         public static DateInterval GetFullInterval()
         {
             return new DateInterval(DateTime.MinValue, DateTime.MaxValue);

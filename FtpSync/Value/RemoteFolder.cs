@@ -22,7 +22,7 @@ namespace FtpSync.Value
             return res;
         }
 
-        public static List<RemoteFolder> GetAllHoursFolders(FtpClient client, string folder, Func<DateTime, bool> func = null)
+        public static List<RemoteFolder> GetAllHoursFolders(FtpClient client, string folder, Func<Folder, bool> func = null)
         {
             var res = new List<RemoteFolder>();
             void AddFolders(FtpListItem f, int recurs)
@@ -38,7 +38,7 @@ namespace FtpSync.Value
                     }
                     else
                     {
-                        if (func(item.YyyyMMddHH))
+                        if (func(item))
                             res.Add(item);
                     }
                 }

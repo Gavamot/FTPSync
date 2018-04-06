@@ -38,11 +38,11 @@ namespace FtpSync.TaskManager
         volatile List<AutoLoadVideoTask> tasks = new List<AutoLoadVideoTask>();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        private void SetChannelAuto(int brigadeCode, int cameraNum, AutoLoadStatus val)
+        private void SetToDblAuto(int brigadeCode, int cameraNum, AutoLoadStatus val)
         {
             using (var db = new DataContext())
             {
-                var item = db.Camera.First(x => x.VideoReg.BrigadeCode == brigadeCode  && x.Num == cameraNum);
+                var item = db.Camera.First(x => x.VideoReg.BrigadeCode == brigadeCode && x.Num == cameraNum);
                 item.AutoLoadVideo = val;
                 db.SaveChanges();
             }
@@ -52,8 +52,6 @@ namespace FtpSync.TaskManager
         {
             lock (tasksLock)
             {
-                SetChannelAuto(brigadeCode, cameraNum, AutoLoadStatus.on);
-
                 if (tasks.Any(x => x.BrigadeCode == brigadeCode && x.CameraNum == cameraNum) == false)
                 {
                     var t = new AutoLoadVideoTask();
@@ -61,7 +59,7 @@ namespace FtpSync.TaskManager
                     t.CameraNum = cameraNum;
                     var cts = new CancellationTokenSource();
                     t.Cts = cts;
-
+                     
                     t.Task = new Task(async (token) =>
                     {
                         using (var loader = AutoFileLoader.CreateChannelAutoLoader(brigadeCode))
@@ -88,12 +86,20 @@ namespace FtpSync.TaskManager
             }
         }
 
-        public void OffAutoload(int brigadeCode, int cameraNum)
+        public void SetOnAutoload(int brigadeCode, int cameraNum)
+        {
+            // Установить значение в БД
+            SetToDblAuto(brigadeCode, cameraNum, AutoLoadStatus.on);
+
+            OnAutoload(brigadeCode, cameraNum);
+        }
+
+        public void SetOffAutoload(int brigadeCode, int cameraNum)
         {
             lock (tasksLock)
             {
                 // Выклычаем в базе
-                SetChannelAuto(brigadeCode, cameraNum, AutoLoadStatus.off);
+                SetToDblAuto(brigadeCode, cameraNum, AutoLoadStatus.off);
                 
                 // Отменяем задачу
                 tasks.ForEach( x => x.Cts.Cancel() );

@@ -44,7 +44,7 @@ namespace FtpSync
         public bool SyncChannelsByPeriod(VideoReg video, DateInterval interval)
         {
             var cts = new CancellationTokenSource();
-            var task = new Task((token) =>
+            var task = new Task(() =>
             {
                 using (var ftp = FtpLoader.Start(video.FtpSettings))
                 {
@@ -53,11 +53,11 @@ namespace FtpSync
                         // Загружаем данные за необходимый интревал
                         // video.BrigadeCode, video.ChannelFolder, channelFolder
                         string localRoot = Path.Combine(channelFolder, video.BrigadeCode.ToString());
-                        ftp.DownloadFilesByInterval(interval, video.ChannelFolder, localRoot);
+                        ftp.DownloadFilesByInterval(interval, video.ChannelFolder, localRoot, cts);
                     }
                     catch (OperationCanceledException e)
                     {
-                        logger.Warn(e, $"{video.BrigadeCode}  [{interval}] operation canseled");
+                        logger.Info(e, $"{video.BrigadeCode}  [{interval}] operation canseled");
                     }
                     catch (Exception e)
                     {
@@ -72,6 +72,7 @@ namespace FtpSync
                         t.BrigadeCode == video.BrigadeCode &&
                         t.Interval == interval);
                 }
+
             }, cts.Token);
 
             ChannelTask newTask = new ChannelTask
@@ -90,14 +91,14 @@ namespace FtpSync
                     x.Interval == interval);
                 if (oldTask != null)
                 {
-                    logger.Info($"SyncChannelsByPeriod({video.BrigadeCode}, {interval}) [EXECUTION-MISS]");
+                    logger.Warn($"SyncChannelsByPeriod({video.BrigadeCode}, {interval}) [EXECUTION-MISS]");
                     return false;
                 }
                 // Ставим задачу на выполнение
                 tasks.Add(newTask);
+                newTask.Task.Start();
             }
 
-            newTask.Task.Start();
             logger.Info($"SyncChannelsByPeriod({video.BrigadeCode}, {interval}) [EXECUTION]");
             return true;
         }

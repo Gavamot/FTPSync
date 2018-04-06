@@ -35,7 +35,8 @@ namespace FtpSync.TaskManager
         volatile List<AutoLoadChannelTask> tasks = new List<AutoLoadChannelTask>();
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        private void SetChannelAuto(int brigadeCode, AutoLoadStatus val)
+        // Установить значение автообновления в бд
+        private void SetToDbAuto(int brigadeCode, AutoLoadStatus val)
         {
             using (var db = new DataContext())
             {
@@ -45,7 +46,6 @@ namespace FtpSync.TaskManager
             }
         }
 
-
         public void OnAutoload(int brigadeCode)
         {
             lock (tasksLock)
@@ -53,65 +53,12 @@ namespace FtpSync.TaskManager
                 if (tasks.Any(x => x.BrigadeCode == brigadeCode))
                     return;
 
-                SetChannelAuto(brigadeCode, AutoLoadStatus.on);
-
-                if (tasks.Any(x => x.BrigadeCode == brigadeCode) == false)
-                {
-                    var t = new AutoLoadChannelTask();
-                    t.BrigadeCode = brigadeCode;
-                    var cts = new CancellationTokenSource();
-                    t.Cts = cts;
-                    t.Task = new Task(async (token) =>
-                    {
-                        using (var loader = AutoFileLoader.CreateChannelAutoLoader(brigadeCode))
-                        {
-                            try
-                            {
-                                while (true)
-                                {
-                                    cts.Token.ThrowIfCancellationRequested();
-                                    loader.Load((CancellationTokenSource)token);
-                                    await Task.Delay(Program.config.ChannelAutoDelayMs, cts.Token);
-                                }
-                            }
-                            catch (OperationCanceledException e)
-                            {
-                                logger.Info($"Task [{brigadeCode}] autoupdate channel was canseled");
-                            }
-                        }
-
-                        lock (tasksLock)
-                        {
-                            // Удаляем задачу из списка
-                            tasks.RemoveAll(x => x.BrigadeCode == brigadeCode);
-                        }
-
-                    }, cts);
-
-                    tasks.Add(t);
-                    t.Task.Start();
-                }
-            }
-        }
-
-
-        public void SetOnAutoload(int brigadeCode)
-        {
-            // Установить значение в БД
-            SetChannelAuto(brigadeCode, AutoLoadStatus.on);
-
-            lock (tasksLock)
-            {
-                // Задача уже выполняется
-                if (tasks.Any(x => x.BrigadeCode == brigadeCode))
-                    return;
-
                 var t = new AutoLoadChannelTask();
                 t.BrigadeCode = brigadeCode;
                 var cts = new CancellationTokenSource();
                 t.Cts = cts;
-                t.Task = new Task(async (token) =>
-                {
+
+                t.Task = new Task(async ()=> {
                     using (var loader = AutoFileLoader.CreateChannelAutoLoader(brigadeCode))
                     {
                         try
@@ -119,7 +66,7 @@ namespace FtpSync.TaskManager
                             while (true)
                             {
                                 cts.Token.ThrowIfCancellationRequested();
-                                loader.Load((CancellationTokenSource)token);
+                                loader.Load(cts);
                                 await Task.Delay(Program.config.ChannelAutoDelayMs, cts.Token);
                             }
                         }
@@ -134,21 +81,28 @@ namespace FtpSync.TaskManager
                         // Удаляем задачу из списка
                         tasks.RemoveAll(x => x.BrigadeCode == brigadeCode);
                     }
-
-                }, cts);
+                }, cts.Token);
 
                 tasks.Add(t);
                 t.Task.Start();
-               
             }
+            logger.Info($"{brigadeCode} [AUTO_CHANNEL_ON]");
+        }
+
+        public void SetOnAutoload(int brigadeCode)
+        {
+            // Установить значение в БД
+            SetToDbAuto(brigadeCode, AutoLoadStatus.on);
+
+            OnAutoload(brigadeCode);
         }
 
         public void SetOffAutoload(int brigadeCode)
         {
             lock (tasksLock)
             {
-                // Выклычаем в базе
-                SetChannelAuto(brigadeCode, 0);
+                // Выключаем в базе
+                SetToDbAuto(brigadeCode, 0);
                 
                 // Отменяем задачу
                 tasks.ForEach( x => x.Cts.Cancel() );
@@ -156,6 +110,8 @@ namespace FtpSync.TaskManager
                 // Удаляем задачу из списка
                 tasks.RemoveAll( x => x.BrigadeCode == brigadeCode );
             }
+
+            logger.Info($"{brigadeCode} [AUTO_CHANNEL_OFF)]");
         }
 
         public List<AutoLoadChannelTask> GetAll => tasks;
