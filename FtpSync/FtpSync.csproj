@@ -146,7 +146,7 @@
     <Compile Include="Controller\ChannelController.cs" />
     <Compile Include="Real\File\FileVdeoMp4.cs" />
     <Compile Include="Value\Folder.cs" />
-    <Compile Include="Value\Interval.cs" />
+    <Compile Include="Value\DateInterval.cs" />
     <Compile Include="Value\LocalFolder.cs" />
     <Compile Include="Value\RemoteFolder.cs" />
     <Compile Include="WebApi\CustomActionFilter.cs" />

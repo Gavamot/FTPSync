@@ -20,7 +20,7 @@ namespace FtpSync
         public int BrigadeCode { get; set; }
 
         [JsonProperty("interval")]
-        public DateTimeInterval Interval { get; set; }
+        public DateInterval Interval { get; set; }
 
         [JsonProperty("cameraNum")]
         public int CameraNum { get; set; }
@@ -42,37 +42,42 @@ namespace FtpSync
         volatile List<VideolTask> tasks = new List<VideolTask>();
         private readonly string videoFolder = Program.config.VideoFolder;
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-        public bool SyncChannelsByPeriod(VideoReg video, int cameraNum, DateTimeInterval interval)
+
+        public bool SyncChannelsByPeriod(VideoReg video, int cameraNum, Value.DateInterval interval)
         {
             var cts = new CancellationTokenSource();
+
             var task = new Task((token) =>
             {
-                try
+                using(var ftp = FtpLoader.Start(video.FtpSettings))
                 {
-                    // Загружаем данные за необходимый интревал
-                    var ftp = FtpLoader.Start(video.FtpSettings);
-                    string removeRoot = Path.Combine(video.VideoFolder, cameraNum.ToString());
-                    string localRoot = Path.Combine(videoFolder, video.BrigadeCode.ToString(), cameraNum.ToString());
-                    ftp.DownloadFilesByInterval(interval, removeRoot, localRoot);
+                    try
+                    {
+                        // Загружаем данные за необходимый интревал
+                        string removeRoot = Path.Combine(video.VideoFolder, cameraNum.ToString());
+                        string localRoot = Path.Combine(videoFolder, video.BrigadeCode.ToString(), cameraNum.ToString());
+                        ftp.DownloadFilesByInterval(interval, removeRoot, localRoot);
+                    }
+                    catch (OperationCanceledException e)
+                    {
+                        logger.Warn(e, $"{video.BrigadeCode} ({cameraNum}) [{interval}] operation canseled");
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Error(e);
+                    }
                 }
-                catch (OperationCanceledException e)
-                {
-                    logger.Warn(e, $"{video.BrigadeCode} ({cameraNum}) [{interval}] operation canseled");
-                }
-                catch (Exception e)
-                {
-                    logger.Error(e);
-                }
-
                 // Сннимаем задачу из списка задач
                 lock (tasksLock)
                 {
-                    tasks.RemoveAll(t =>
+                    tasks.RemoveAll((Predicate<VideolTask>)(t =>
                         t.BrigadeCode == video.BrigadeCode &&
                         t.Interval == interval &&
-                        t.CameraNum == cameraNum);
+                        t.CameraNum == cameraNum));
                 }
+
             }, cts.Token);
+
             var newTask = new VideolTask
             {
                 BrigadeCode = video.BrigadeCode,
@@ -85,10 +90,10 @@ namespace FtpSync
             lock (tasksLock)
             {
                 // Проверем выполняется ли в данный момент аналогичная задача если да то не надо ее дублировать
-                VideolTask oldTask = tasks.FirstOrDefault(x =>
+                VideolTask oldTask = tasks.FirstOrDefault((Func<VideolTask, bool>)(x =>
                     x.BrigadeCode == video.BrigadeCode &&
                     x.CameraNum == cameraNum &&
-                    x.Interval == interval);
+                    x.Interval == interval));
                 if (oldTask != null)
                 {
                     logger.Info($"SyncCameraByPeriod({video.BrigadeCode}, {cameraNum}, {interval}) [EXECUTION-MISS]");

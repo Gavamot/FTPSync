@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace FtpSync.Value
 {
-    public struct DateTimeInterval
+    public struct DateInterval
     {
-        public DateTimeInterval(DateTime start, DateTime end)
+        public DateInterval(DateTime start, DateTime end)
         {
             if(start > end)
                 throw new ArgumentException("Start can not be more then end");
@@ -28,19 +28,19 @@ namespace FtpSync.Value
             return Start <= dt && End >= dt;
         }
 
-        public static DateTimeInterval GetFullInterval()
+        public static DateInterval GetFullInterval()
         {
-            return new DateTimeInterval(DateTime.MinValue, DateTime.MaxValue);
+            return new DateInterval(DateTime.MinValue, DateTime.MaxValue);
         }
 
-        public static bool operator == (DateTimeInterval interval1, DateTimeInterval interval2)
+        public static bool operator == (DateInterval interval1, DateInterval interval2)
         {
             return 
                 interval1.Start == interval2.Start &&
                 interval1.End == interval2.End;
         }
 
-        public static bool operator !=(DateTimeInterval interval1, DateTimeInterval interval2)
+        public static bool operator !=(DateInterval interval1, DateInterval interval2)
         {
             return !(interval1 == interval2);
         }

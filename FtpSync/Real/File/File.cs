@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FtpSync.Value;
 
 namespace FtpSync.Real.File
 {
@@ -18,6 +19,11 @@ namespace FtpSync.Real.File
         /// </summary>
         public abstract bool IsComplete { get; }
         public abstract string Exst { get; }
+
+        public bool IsInInterval(DateInterval interval)
+        {
+            return Pdt >= interval.Start && Pdt <= interval.End;
+        }
     }
 
 }

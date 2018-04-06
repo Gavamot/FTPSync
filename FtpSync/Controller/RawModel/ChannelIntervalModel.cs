@@ -11,7 +11,7 @@ namespace FtpSync.Controller
     public class ChannelIntervalModel
     {
         public int BrigadeCode { get; set; }
-        public DateTimeInterval Interval { get; set; }
+        public DateInterval Interval { get; set; }
     }
 
 }

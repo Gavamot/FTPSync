@@ -20,5 +20,11 @@ namespace FtpSync
         {
             return self.ToString("yyyy/M/d HH:mm:ss");
         }
+
+        public static DateTime RoundToHour(this DateTime self)
+        {
+            return new DateTime(self.Year, self.Month, self.Day,
+                                 self.Hour, 0, 0, self.Kind);
+        }
     }
 }

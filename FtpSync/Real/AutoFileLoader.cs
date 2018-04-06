@@ -15,7 +15,7 @@ namespace FtpSync.Real
     interface IIntervalManager
     {
         string LocalDir { get; }
-        DateTimeInterval GetTimeStamp();
+        DateInterval GetTimeStamp();
         void SetTimeStamp(DateTime timestamp);
     }
 
@@ -30,7 +30,7 @@ namespace FtpSync.Real
 
         public string LocalDir => Path.Combine(Program.config.ChannelFolder, BrigadeCode.ToString());
 
-        public DateTimeInterval GetTimeStamp()
+        public DateInterval GetTimeStamp()
         {
             DateTime? timeStamp = null;
 
@@ -46,7 +46,7 @@ namespace FtpSync.Real
                 timeStamp = LocalFolder.GetMaxDate(LocalDir);
             }
 
-            var res = new DateTimeInterval(timeStamp ?? DateTime.MinValue, DateTime.MaxValue);
+            var res = new DateInterval(timeStamp ?? DateTime.MinValue, DateTime.MaxValue);
             return res;
         }
 
@@ -75,7 +75,7 @@ namespace FtpSync.Real
 
         public string LocalDir => Path.Combine(Program.config.VideoFolder, BrigadeCode.ToString(), CameraNum.ToString());
 
-        public DateTimeInterval GetTimeStamp()
+        public DateInterval GetTimeStamp()
         {
             DateTime? timeStamp = null;
             using (var db = new DataContext())
@@ -91,7 +91,7 @@ namespace FtpSync.Real
                 timeStamp = LocalFolder.GetMaxDate(LocalDir);
             }
 
-            var res = new DateTimeInterval(timeStamp ?? DateTime.MinValue, DateTime.MaxValue);
+            var res = new DateInterval(timeStamp ?? DateTime.MinValue, DateTime.MaxValue);
             return res;
         }
 
@@ -106,9 +106,9 @@ namespace FtpSync.Real
         }
     }
 
-    class AutoFileLoader
+    class AutoFileLoader : IDisposable
     {
-        private DateTimeInterval intrerval = DateTimeInterval.GetFullInterval();
+        private DateInterval intrerval = DateInterval.GetFullInterval();
         
         public IIntervalManager TimeStampManager { get; set; }
         private string localRoot { get; set; }
@@ -119,7 +119,7 @@ namespace FtpSync.Real
         public void Load(CancellationTokenSource cts = null)
         {
             // Получаем метку из базы если ее нет в кэше
-            if (intrerval == DateTimeInterval.GetFullInterval()) 
+            if (intrerval == DateInterval.GetFullInterval()) 
                 intrerval = TimeStampManager.GetTimeStamp();
 
             List<IFile> files = new List<IFile>();
@@ -131,16 +131,16 @@ namespace FtpSync.Real
             }
             catch (Exception e)
             {
-                var a = 1;
+                logger.Error(e, e.Message);
             }
 
             if (files.Any()) // Нет файлов
             {
                 // Находим дату максимального файла
                 DateTime pdt = files.Max(x => x.Pdt);
-
+                pdt = pdt.RoundToHour();
                 // Кэш временной метки
-                intrerval = new DateTimeInterval(pdt, DateTime.MaxValue);
+                intrerval = new DateInterval(pdt, DateTime.MaxValue);
 
                 // Выставлем временную метку в базу данных
                 TimeStampManager.SetTimeStamp(pdt);
@@ -151,7 +151,7 @@ namespace FtpSync.Real
         {
             cts.Token.ThrowIfCancellationRequested();
             // Получаем метку из базы если ее нет в кеше
-            if (intrerval == DateTimeInterval.GetFullInterval())
+            if (intrerval == DateInterval.GetFullInterval())
                 intrerval = TimeStampManager.GetTimeStamp();
 
             List<IFile> files = new List<IFile>();
@@ -172,7 +172,7 @@ namespace FtpSync.Real
             DateTime pdt = files.Max(x => x.Pdt);
 
             // Кэш временной метки
-            intrerval = new DateTimeInterval(pdt, DateTime.MaxValue);
+            intrerval = new DateInterval(pdt, DateTime.MaxValue);
 
             // Выставлем временную метку в базу данных
             TimeStampManager.SetTimeStamp(pdt);
@@ -206,6 +206,11 @@ namespace FtpSync.Real
                 res.Loader = new FtpLoader(reg.FtpSettings);
             }
             return res;
+        }
+
+        public void Dispose()
+        {
+            Loader.Dispose();
         }
     }
 }

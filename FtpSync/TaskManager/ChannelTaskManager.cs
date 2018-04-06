@@ -19,7 +19,7 @@ namespace FtpSync
         public int BrigadeCode { get; set; }
 
         [JsonProperty("interval")]
-        public DateTimeInterval Interval { get; set; }
+        public DateInterval Interval { get; set; }
 
         [JsonIgnore]
         public Task Task { get; set; }
@@ -41,26 +41,28 @@ namespace FtpSync
 
         public List<ChannelTask> GetAll => tasks;
 
-        public bool SyncChannelsByPeriod(VideoReg video, DateTimeInterval interval)
+        public bool SyncChannelsByPeriod(VideoReg video, DateInterval interval)
         {
             var cts = new CancellationTokenSource();
             var task = new Task((token) =>
             {
-                try
+                using (var ftp = FtpLoader.Start(video.FtpSettings))
                 {
-                    // Загружаем данные за необходимый интревал
-                    // video.BrigadeCode, video.ChannelFolder, channelFolder
-                    var ftp = FtpLoader.Start(video.FtpSettings);
-                    string localRoot = Path.Combine(channelFolder, video.BrigadeCode.ToString());
-                    ftp.DownloadFilesByInterval(interval, video.ChannelFolder, localRoot);
-                }
-                catch (OperationCanceledException e)
-                {
-                    logger.Warn(e, $"{video.BrigadeCode}  [{interval}] operation canseled");
-                }
-                catch (Exception e)
-                {
-                    logger.Error(e);
+                    try
+                    {
+                        // Загружаем данные за необходимый интревал
+                        // video.BrigadeCode, video.ChannelFolder, channelFolder
+                        string localRoot = Path.Combine(channelFolder, video.BrigadeCode.ToString());
+                        ftp.DownloadFilesByInterval(interval, video.ChannelFolder, localRoot);
+                    }
+                    catch (OperationCanceledException e)
+                    {
+                        logger.Warn(e, $"{video.BrigadeCode}  [{interval}] operation canseled");
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Error(e);
+                    }
                 }
 
                 // Сннимаем задачу из списка задач

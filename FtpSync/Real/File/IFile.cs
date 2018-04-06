@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FtpSync.Value;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,5 +19,6 @@ namespace FtpSync.Real.File
         /// Показывает завершен полностью ли полностью файл записан на диск
         /// </summary>
         bool IsComplete { get; }
+        bool IsInInterval(DateInterval interval);
     }
 }

@@ -38,10 +38,8 @@ namespace FtpSync.Real
             Client.Connect();
         }
 
-        public bool Download(string localPath, string remotePath)
-        {
-            return Client.DownloadFile(localPath, remotePath);
-        }
+        private void CopyFile(IFile f) { 
+}
 
         /// <summary>
         /// Загружает по ftp файлы за переданный интервал 
@@ -50,8 +48,8 @@ namespace FtpSync.Real
         /// <param name="remoteRoot">удаленный каталог</param>
         /// <param name="localRoot">куда копировать</param>
         /// <param name="token">Токен для отмены</param>
-        /// <returns>Возвращает список скопированных файлов</returns>
-        public List<IFile> DownloadFilesByInterval(DateTimeInterval interval, string remoteRoot, string localRoot, CancellationTokenSource cts = null)
+        /// <returns>Возвращает список скопированных  или существующих на сервере файлов</returns>
+        public List<IFile> DownloadFilesByInterval(DateInterval interval, string remoteRoot, string localRoot, CancellationTokenSource cts = null)
         {
             // Получаем все каталоги отфильтрованные по диапозону дат [час]
             List<RemoteFolder> remoteFolders = RemoteFolder.GetAllHoursFolders(Client, remoteRoot, interval.BitwinDate );
@@ -67,20 +65,34 @@ namespace FtpSync.Real
                     {
                         string localFile = remoteFile.FullName.Replace("/", "\\")
                             .Replace(remoteRoot.Replace("/", "\\"), localRoot.Replace("/", "\\")); 
+
                         // Проверяем файл на соответствие формату
-                        IFile f = new FileChannelJson();
+                        IFile f;
                         try
                         {
-                            f = new FileFactory().Create(remoteFile.Name);
+                            f = FileFactory.Create(remoteFile.Name);
                         }
                         catch (FormatException e)
                         {
                             logger.Error(e, $"{ localFile } haves bad format [ERROR]");
                             continue;
                         }
-
-                        // Файл полностью записан или его нет на диске
-                        if (f.IsComplete && !System.IO.File.Exists(localFile))
+                         
+                        // Копируем файл
+                        if (!f.IsComplete) // Файл не полностью записан
+                        {
+                            logger.Info($" {f} [MISS] - not completed");
+                        }
+                        else if (!f.IsInInterval(interval)) // Не входит в интервал
+                        {
+                            //logger.Info($" {f} [MISS] - Exists in the server");
+                        }
+                        else if(!System.IO.File.Exists(localFile)) // Нет в папке на сервере
+                        {
+                            logger.Info($" {f} [MISS] - exists in the server");
+                            res.Add(f);
+                        }
+                        else //Переносим файл
                         {
                             try
                             {
@@ -93,70 +105,7 @@ namespace FtpSync.Real
                                 logger.Error(e, $"copy {f} [ERROR]");
                             }
                         }
-                        else
-                        {
-                            logger.Info($"{f} [MISS]");
-                        }
-                    }
-                }
-            }
-            return res;
-        }
 
-        /// <summary>
-        /// Загружает по ftp файлы за переданный интервал 
-        /// </summary>
-        /// <param name="interval">временной интервал</param>
-        /// <param name="remoteRoot">удаленный каталог</param>
-        /// <param name="localRoot">куда копировать</param>
-        /// <param name="token">Токен для отмены</param>
-        /// <returns>Возвращает список скопированных файлов</returns>
-        public async Task<List<IFile>> DownloadFilesByIntervalAsync(DateTimeInterval interval, string remoteRoot, string localRoot, CancellationToken? token = null)
-        {
-            // Получаем все каталоги отфильтрованные по диапозону дат [час]
-            List<RemoteFolder> remoteFolders = RemoteFolder.GetAllHoursFolders(Client, remoteRoot, interval.BitwinDate);
-            var res = new List<IFile>();
-            foreach (RemoteFolder remoteFolder in remoteFolders)
-            {
-                // Папка куда копировать файлы [час]
-                foreach (FtpListItem remoteFile in Client.GetListing(remoteFolder.ToString()))
-                {
-                    token?.ThrowIfCancellationRequested();
-
-                    if (remoteFile.Type == FtpFileSystemObjectType.File)
-                    {
-                        string localFile = remoteFile.FullName.Replace("/", "\\")
-                            .Replace(remoteRoot.Replace("/", "\\"), localRoot.Replace("/", "\\"));
-                        // Проверяем файл на соответствие формату
-                        IFile f = new FileChannelJson();
-                        try
-                        {
-                            f = new FileFactory().Create(remoteFile.Name);
-                        }
-                        catch (FormatException e)
-                        {
-                            logger.Error(e, $"{ localFile } haves bad format [ERROR]");
-                            continue;
-                        }
-
-                        // Файл полностью записан или его нет на диске
-                        if (f.IsComplete && !System.IO.File.Exists(localFile))
-                        {
-                            try
-                            {
-                                Client.DownloadFile(localFile, remoteFile.FullName);
-                                res.Add(f);
-                                logger.Info($"{f} [OK]");
-                            }
-                            catch (Exception e)
-                            {
-                                logger.Error(e, $"copy {f} [ERROR]");
-                            }
-                        }
-                        else
-                        {
-                            logger.Info($"{f} [MISS]");
-                        }
                     }
                 }
             }

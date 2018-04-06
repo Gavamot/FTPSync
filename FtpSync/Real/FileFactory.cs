@@ -14,7 +14,9 @@ namespace FtpSync.Real
 {
     class FileFactory
     {
-        public IFile Create(string fileName)
+
+
+        public static IFile Create(string fileName)
         {
             var f = new FileInfo(fileName);
             string fname = Path.GetFileNameWithoutExtension(f.Name);

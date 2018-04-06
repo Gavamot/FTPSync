@@ -61,23 +61,27 @@ namespace FtpSync.TaskManager
                     t.CameraNum = cameraNum;
                     var cts = new CancellationTokenSource();
                     t.Cts = cts;
-                    t.Task = new Task((token) =>
+
+                    t.Task = new Task(async (token) =>
                     {
-                        while (true)
+                        using (var loader = AutoFileLoader.CreateChannelAutoLoader(brigadeCode))
                         {
-                            cts.Token.ThrowIfCancellationRequested();
                             try
                             {
-                                var loader = AutoFileLoader.CreateChannelAutoLoader(brigadeCode);
-                                loader.Load();
+                                while (true)
+                                {
+                                    cts.Token.ThrowIfCancellationRequested();
+                                    loader.Load();
+                                    await Task.Delay(Program.config.VideoAutoDelayMs, cts.Token);
+                                }
                             }
                             catch (OperationCanceledException e)
                             {
                                 logger.Info($"Task [{brigadeCode}] autoupdate video was canseled");
                             }
-                            Task.Delay(Program.config.ChannelAutoDelayMs, cts.Token);
                         }
                     }, cts.Token);
+
                     t.Task.Start();
                     tasks.Add(t);
                 }

@@ -92,13 +92,13 @@ namespace FtpSync
             //  Глобальный обработчик ошибок
             AppDomain.CurrentDomain.UnhandledException += ProcessException;
 
-            SetDefaultCulture();
-
-            StartAuto();
-
             // Запускаем web Api 2
             var host = WebApp.Start<Startup>(config.Host);
             logger.Info($"Wep Api 2 started on host {config.Host}");
+
+            SetDefaultCulture();
+
+            StartAuto();
 
             while (true)
             {
