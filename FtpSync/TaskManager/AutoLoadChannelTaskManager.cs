@@ -92,7 +92,7 @@ namespace FtpSync.TaskManager
         public void SetOnAutoload(int brigadeCode)
         {
             // Установить значение в БД
-            SetToDbAuto(brigadeCode, AutoLoadStatus.on);
+            //SetToDbAuto(brigadeCode, AutoLoadStatus.on);
 
             OnAutoload(brigadeCode);
         }
@@ -102,7 +102,7 @@ namespace FtpSync.TaskManager
             lock (tasksLock)
             {
                 // Выключаем в базе
-                SetToDbAuto(brigadeCode, 0);
+                //SetToDbAuto(brigadeCode, 0);
                 
                 // Отменяем задачу
                 tasks.ForEach( x => x.Cts.Cancel() );

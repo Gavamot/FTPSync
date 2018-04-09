@@ -37,5 +37,6 @@ namespace FtpSync.Entety
         {
             return $"{Id}) cam {Num} TimeStamp = {TimeStamp:yyyy-MM-dd HH:mm:ss} auto = {AutoLoadVideo}";
         }
+
     }
 }

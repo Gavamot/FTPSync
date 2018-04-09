@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using FtpSync.Controller.RawModel;
+using FtpSync.Entety;
 using FtpSync.TaskManager;
 
 namespace FtpSync.Controller
@@ -58,6 +59,38 @@ namespace FtpSync.Controller
             List<AutoLoadChannelTask> res = AutoLoadChannelTaskManager.Instance.GetAll;
             return res;
         }
+
+        private IHttpActionResult SetAuto(int brigadeCode, AutoLoadStatus status)
+        {
+            switch (VideoReg.UpdateChannelAuto(db, brigadeCode, status)) // Устанавливаем значение в БД
+            {
+                case UpdateEntetyStatus.NotExist: return BadRequest("The video registrator not exsist.");
+                case UpdateEntetyStatus.NotUpdate: return BadRequest("Channel auuto the value is the same.");
+                case UpdateEntetyStatus.Updated:
+                    {
+                        // Ставил либо снимаем задачу
+                        if(status == AutoLoadStatus.on)
+                            AutoLoadChannelTaskManager.Instance.SetOnAutoload(brigadeCode); 
+                        else
+                            AutoLoadChannelTaskManager.Instance.SetOffAutoload(brigadeCode);
+                        return Ok();
+                    };
+                default: return BadRequest("Unknown error");
+            }
+        }
+
+        [HttpPost]
+        public IHttpActionResult OnAuto([FromBody] int brigadeCode) 
+        {
+            return SetAuto(brigadeCode, AutoLoadStatus.on);
+        }
+
+        [HttpPost]
+        public IHttpActionResult OffAuto([FromBody] int brigadeCode)
+        {
+            return SetAuto(brigadeCode, AutoLoadStatus.off);
+        }
+
     }
 
 }

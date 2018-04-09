@@ -64,5 +64,20 @@ namespace FtpSync.Entety
             }
             return res;
         }
+
+        public static UpdateEntetyStatus UpdateChannelAuto(DataContext db, int brigadeCode, AutoLoadStatus status)
+        {
+            using (db)
+            {
+                var v = db.VideoReg.FirstOrDefault(x => x.BrigadeCode == brigadeCode);
+                if (v == null)
+                    return UpdateEntetyStatus.NotExist;
+                if (v.ChannelAutoLoad == status)
+                    return UpdateEntetyStatus.NotUpdate;
+                v.ChannelAutoLoad = status;
+                db.SaveChanges();
+            }
+            return UpdateEntetyStatus.Updated;
+        }
     }
 }
