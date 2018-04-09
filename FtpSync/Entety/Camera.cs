@@ -38,5 +38,20 @@ namespace FtpSync.Entety
             return $"{Id}) cam {Num} TimeStamp = {TimeStamp:yyyy-MM-dd HH:mm:ss} auto = {AutoLoadVideo}";
         }
 
+        public static UpdateEntetyStatus UpdateAuto(DataContext db, int brigadeCode, int cameraNum, AutoLoadStatus status)
+        {
+            using (db)
+            {
+                var v = db.Camera.FirstOrDefault(x => x.VideoReg.BrigadeCode == brigadeCode && x.Num == cameraNum);
+                if (v == null)
+                    return UpdateEntetyStatus.NotExist;
+                if (v.AutoLoadVideo == status)
+                    return UpdateEntetyStatus.NotUpdate;
+                v.AutoLoadVideo = status;
+                db.SaveChanges();
+            }
+            return UpdateEntetyStatus.Updated;
+        }
+
     }
 }

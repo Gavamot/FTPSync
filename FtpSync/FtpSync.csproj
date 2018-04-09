@@ -137,7 +137,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controller\RawModel\BrigadeModel.cs" />
+    <Compile Include="Controller\RawModel\CameraModel.cs" />
     <Compile Include="Controller\RawModel\TimeStampChannelModel.cs" />
     <Compile Include="Controller\RawModel\TimeStampVideoModel.cs" />
     <Compile Include="Entety\AutoLoadStatus.cs" />

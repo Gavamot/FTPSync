@@ -103,12 +103,13 @@ namespace FtpSync.TaskManager
             {
                 // Выключаем в базе
                 //SetToDbAuto(brigadeCode, 0);
-                
+
                 // Отменяем задачу
-                tasks.ForEach( x => x.Cts.Cancel() );
-                
+                var t = tasks.First(x => x.BrigadeCode == brigadeCode);
+                t.Cts.Cancel();
+
                 // Удаляем задачу из списка
-                tasks.RemoveAll( x => x.BrigadeCode == brigadeCode );
+                tasks.Remove(t);
             }
 
             logger.Info($"{brigadeCode} [AUTO_CHANNEL_OFF)]");

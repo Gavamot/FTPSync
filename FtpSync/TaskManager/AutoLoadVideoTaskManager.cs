@@ -89,7 +89,7 @@ namespace FtpSync.TaskManager
         public void SetOnAutoload(int brigadeCode, int cameraNum)
         {
             // Установить значение в БД
-            SetToDblAuto(brigadeCode, cameraNum, AutoLoadStatus.on);
+            //SetToDblAuto(brigadeCode, cameraNum, AutoLoadStatus.on);
 
             OnAutoload(brigadeCode, cameraNum);
         }
@@ -99,13 +99,14 @@ namespace FtpSync.TaskManager
             lock (tasksLock)
             {
                 // Выклычаем в базе
-                SetToDblAuto(brigadeCode, cameraNum, AutoLoadStatus.off);
+                //SetToDblAuto(brigadeCode, cameraNum, AutoLoadStatus.off);
                 
                 // Отменяем задачу
-                tasks.ForEach( x => x.Cts.Cancel() );
-                
+                var t = tasks.First(x=> x.BrigadeCode==brigadeCode && x.CameraNum==cameraNum);
+                t.Cts.Cancel();
+
                 // Удаляем задачу из списка
-                tasks.RemoveAll( x => x.BrigadeCode == brigadeCode );
+                tasks.Remove(t);
             }
         }
 

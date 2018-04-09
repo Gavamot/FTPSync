@@ -65,7 +65,7 @@ namespace FtpSync.Controller
             switch (VideoReg.UpdateChannelAuto(db, brigadeCode, status)) // Устанавливаем значение в БД
             {
                 case UpdateEntetyStatus.NotExist: return BadRequest("The video registrator not exsist.");
-                case UpdateEntetyStatus.NotUpdate: return BadRequest("Channel auuto the value is the same.");
+                case UpdateEntetyStatus.NotUpdate: return BadRequest("Channel auto the value is the same.");
                 case UpdateEntetyStatus.Updated:
                     {
                         // Ставил либо снимаем задачу
@@ -91,6 +91,22 @@ namespace FtpSync.Controller
             return SetAuto(brigadeCode, AutoLoadStatus.off);
         }
 
+        [HttpPost]
+        public IHttpActionResult CancelTask([FromBody] VideoIntervalModel model)
+        {
+            using (db)
+            {
+                // Поиск видеорегистратора в базе
+                var reg = db.VideoReg.FirstOrDefault(x => x.BrigadeCode == model.BrigadeCode);
+                if (reg == null)
+                {
+                    return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
+                }
+                // Выполнение операции
+                ChannelTaskManager.Instance.CancelTask(reg, model.Interval);
+            }
+            return Ok();
+        }
     }
 
 }

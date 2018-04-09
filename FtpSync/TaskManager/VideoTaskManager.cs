@@ -55,7 +55,7 @@ namespace FtpSync
                         // Загружаем данные за необходимый интревал
                         string removeRoot = Path.Combine(video.VideoFolder, cameraNum.ToString());
                         string localRoot = Path.Combine(videoFolder, video.BrigadeCode.ToString(), cameraNum.ToString());
-                        ftp.DownloadFilesByInterval(interval, removeRoot, localRoot);
+                        ftp.DownloadFilesByInterval(interval, removeRoot, localRoot, cts);
                     }
                     catch (OperationCanceledException e)
                     {
@@ -66,6 +66,7 @@ namespace FtpSync
                         logger.Error(e);
                     }
                 }
+
                 // Сннимаем задачу из списка задач
                 lock (tasksLock)
                 {
@@ -109,6 +110,19 @@ namespace FtpSync
       
             logger.Info($"SyncCameraByPeriod({video.BrigadeCode}, {cameraNum}, {interval}) [EXECUTION]");
             return true;
+        }
+
+        public void CancelTask(Camera cam, DateInterval interval)
+        {
+            lock (tasksLock)
+            {
+                // Отменяем задачу
+                var t = tasks.First(x => x.BrigadeCode == cam.VideoReg.BrigadeCode && x.Interval == interval);
+                t.Cts.Cancel();
+
+                // Удаляем задачу из списка
+                tasks.Remove(t);
+            }
         }
 
         public List<VideolTask> GetAll => tasks;   

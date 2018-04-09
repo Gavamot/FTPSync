@@ -102,5 +102,18 @@ namespace FtpSync
             logger.Info($"SyncChannelsByPeriod({video.BrigadeCode}, {interval}) [EXECUTION]");
             return true;
         }
+
+        public void CancelTask(VideoReg video, DateInterval interval)
+        {
+            lock (tasksLock)
+            {
+                // Отменяем задачу
+                var t = tasks.First(x => x.BrigadeCode == video.BrigadeCode && x.Interval == interval);
+                t.Cts.Cancel();
+
+                // Удаляем задачу из списка
+                tasks.Remove(t);
+            }
+        }
     }
 }

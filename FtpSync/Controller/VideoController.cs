@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using FtpSync.Controller.RawModel;
+using FtpSync.Entety;
 using FtpSync.TaskManager;
 
 namespace FtpSync.Controller
@@ -66,6 +67,55 @@ namespace FtpSync.Controller
             return res;
         }
 
-    }
+        private IHttpActionResult SetAuto(int brigadeCode, int cameraNum, AutoLoadStatus status)
+        {
+            switch (Camera.UpdateAuto(db, brigadeCode, cameraNum, status)) // Устанавливаем значение в БД
+            {
+                case UpdateEntetyStatus.NotExist: return BadRequest("The camera not exsist.");
+                case UpdateEntetyStatus.NotUpdate: return BadRequest("Camera auto the value is the same.");
+                case UpdateEntetyStatus.Updated:
+                    {
+                        // Ставил либо снимаем задачу
+                        if (status == AutoLoadStatus.on)
+                            AutoLoadChannelTaskManager.Instance.SetOnAutoload(brigadeCode);
+                        else
+                            AutoLoadChannelTaskManager.Instance.SetOffAutoload(brigadeCode);
+                        return Ok();
+                    };
+                default: return BadRequest("Unknown error");
+            }
+        }
 
+        [HttpPost]
+        public IHttpActionResult OnAuto([FromBody] CameraModel cam)
+        {
+            return SetAuto(cam.BrigadeCode, cam.CameraNum, AutoLoadStatus.on);
+        }
+
+        [HttpPost]
+        public IHttpActionResult OffAuto([FromBody] CameraModel cam)
+        {
+            return SetAuto(cam.BrigadeCode, cam.CameraNum, AutoLoadStatus.off);
+        }
+
+        [HttpPost]
+        public IHttpActionResult CancelTask([FromBody] VideoIntervalModel model)
+        {
+            using (db)
+            {
+                // Поиск видеорегистратора в базе
+                var reg = db.Camera.Include(x=>x.VideoReg)
+                    .FirstOrDefault( x => 
+                        x.VideoReg.BrigadeCode == model.BrigadeCode && 
+                        x.Num == model.CameraNum );
+                if (reg == null)
+                {
+                    return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
+                }
+                // Выполнение операции
+                VideoTaskManager.Instance.CancelTask(reg, model.Interval);
+            }
+            return Ok();
+        }
+    }
 }

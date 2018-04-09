@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace FtpSync.Controller.RawModel
 {
-    public class BrigadeModel
+    public class CameraModel
     {
-        public int Code { get; set; }
+        public int BrigadeCode { get; set; }
+        public int CameraNum { get; set; }
     }
 }
