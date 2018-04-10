@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Globalization;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using FtpSync.Entety;
 using FtpSync.TaskManager;
@@ -87,20 +88,28 @@ namespace FtpSync
             catch { }
         }
 
+        // Запуск служб автоподкачки
+        static void StartAuto()
+        {
+            StartAutoChannel();
+            StartAutoVideo();
+            Thread.Sleep(500);
+        }
+
         // Получить все катологи  
         static void Main(string[] args)
         {
+            SetDefaultCulture();
+
             //  Глобальный обработчик ошибок
             AppDomain.CurrentDomain.UnhandledException += ProcessException;
+
+            // Запуск служб автоподкачки
+            StartAuto();
 
             // Запускаем web Api 2
             var host = WebApp.Start<Startup>(config.Host);
             logger.Info($"Wep Api 2 started on host {config.Host}");
-
-            SetDefaultCulture();
-
-            StartAutoChannel();
-            StartAutoVideo();
 
             while (true)
             {
@@ -110,6 +119,7 @@ namespace FtpSync
 
         static void StartAutoChannel()
         {
+            logger.Info("Start auto loading channel");
             Task.Factory.StartNew(() =>
             {
                 using (var db = new DataContext())
@@ -127,6 +137,7 @@ namespace FtpSync
 
         static void StartAutoVideo()
         {
+            logger.Info("Start auto loading video");
             Task.Factory.StartNew(() =>
             {
                 using (var db = new DataContext())

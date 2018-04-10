@@ -63,6 +63,7 @@ namespace FtpSync.TaskManager
                     {
                         try
                         {
+                            logger.Info($"Task [{brigadeCode}] autoupdate channel was started");
                             while (true)
                             {
                                 cts.Token.ThrowIfCancellationRequested();

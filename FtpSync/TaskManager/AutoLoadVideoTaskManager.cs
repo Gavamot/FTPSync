@@ -66,6 +66,7 @@ namespace FtpSync.TaskManager
                         {
                             try
                             {
+                                logger.Info($"Task [{brigadeCode}({cameraNum})] autoupdate video was started");
                                 while (true)
                                 {
                                     cts.Token.ThrowIfCancellationRequested();

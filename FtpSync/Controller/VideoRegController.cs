@@ -92,6 +92,5 @@ namespace FtpSync.Controller
                 return res;
             }
         }
-
     }
 }

@@ -14,8 +14,6 @@ namespace FtpSync.Real
 {
     class FileFactory
     {
-
-
         public static IFile Create(string fileName)
         {
             var f = new FileInfo(fileName);
