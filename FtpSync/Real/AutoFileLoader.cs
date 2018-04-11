@@ -147,37 +147,6 @@ namespace FtpSync.Real
             }
         }
 
-        public async void LoadAsync(CancellationTokenSource cts)
-        {
-            cts.Token.ThrowIfCancellationRequested();
-            // Получаем метку из базы если ее нет в кеше
-            if (intrerval == DateInterval.GetFullInterval())
-                intrerval = TimeStampManager.GetTimeStamp();
-
-            List<IFile> files = new List<IFile>();
-            // Копируем файлы
-            try
-            {
-                files = Loader.DownloadFilesByInterval(intrerval, remoteRoot, localRoot, cts);
-            }
-            catch(Exception e)
-            {
-                logger.Error(e, e.Message);
-            }
-                
-            if (!files.Any()) // Нет файлов
-                return;
-
-            // Находим дату максимального файла
-            DateTime pdt = files.Max(x => x.Pdt);
-
-            // Кэш временной метки
-            intrerval = new DateInterval(pdt, DateTime.MaxValue);
-
-            // Выставлем временную метку в базу данных
-            TimeStampManager.SetTimeStamp(pdt);
-        }
-
         public static AutoFileLoader CreateChannelAutoLoader(int brigadeCode)
         {
             var res = new AutoFileLoader();
@@ -196,7 +165,7 @@ namespace FtpSync.Real
         public static AutoFileLoader CreateVideoAutoLoader(int brigadeCode, int cameraNum)
         {
             var res = new AutoFileLoader();
-            res.localRoot = Path.Combine(Program.config.ChannelFolder, brigadeCode.ToString(), cameraNum.ToString());
+            res.localRoot = Path.Combine(Program.config.VideoFolder, brigadeCode.ToString(), cameraNum.ToString());
             res.TimeStampManager =  new VideoCamIntervalManager(brigadeCode, cameraNum);
 
             using (var db = new DataContext())

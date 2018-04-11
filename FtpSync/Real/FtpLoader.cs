@@ -102,7 +102,6 @@ namespace FtpSync.Real
                                 logger.Error(e, $"copy {f} [ERROR]");
                             }
                         }
-
                     }
 
                 }
