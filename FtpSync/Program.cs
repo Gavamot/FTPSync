@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Globalization;
@@ -142,7 +144,7 @@ namespace FtpSync
             {
                 using (var db = new DataContext())
                 {
-                    Parallel.ForEach(db.Camera, cam =>
+                    Parallel.ForEach(db.Camera.Include(x=>x.VideoReg).ToList(), cam =>
                     {
                         if (cam.AutoLoadVideo == AutoLoadStatus.on)
                         {

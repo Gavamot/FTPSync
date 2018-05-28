@@ -62,7 +62,7 @@ namespace FtpSync.TaskManager
                      
                     t.Task = new Task(async (token) =>
                     {
-                        using (var loader = AutoFileLoader.CreateChannelAutoLoader(brigadeCode))
+                        using (var loader = AutoFileLoader.CreateVideoAutoLoader(brigadeCode, cameraNum))
                         {
                             try
                             {
@@ -103,7 +103,7 @@ namespace FtpSync.TaskManager
                 //SetToDblAuto(brigadeCode, cameraNum, AutoLoadStatus.off);
                 
                 // Отменяем задачу
-                var t = tasks.First(x=> x.BrigadeCode==brigadeCode && x.CameraNum==cameraNum);
+                var t = tasks.First(x=> x.BrigadeCode==brigadeCode && x.CameraNum == cameraNum);
                 t.Cts.Cancel();
 
                 // Удаляем задачу из списка

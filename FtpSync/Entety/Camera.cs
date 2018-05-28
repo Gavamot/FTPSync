@@ -44,13 +44,13 @@ namespace FtpSync.Entety
             {
                 var v = db.Camera.FirstOrDefault(x => x.VideoReg.BrigadeCode == brigadeCode && x.Num == cameraNum);
                 if (v == null)
-                    return UpdateEntetyStatus.NotExist;
+                    return UpdateEntetyStatus.notExist;
                 if (v.AutoLoadVideo == status)
-                    return UpdateEntetyStatus.NotUpdate;
+                    return UpdateEntetyStatus.notUpdate;
                 v.AutoLoadVideo = status;
                 db.SaveChanges();
             }
-            return UpdateEntetyStatus.Updated;
+            return UpdateEntetyStatus.updated;
         }
 
     }

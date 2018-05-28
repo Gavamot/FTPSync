@@ -32,15 +32,15 @@ namespace FtpSync.Controller
         {
             switch (Camera.UpdateAuto(db, brigadeCode, cameraNum, status)) // Устанавливаем значение в БД
             {
-                case UpdateEntetyStatus.NotExist: return BadRequest("The camera not exsist.");
-                case UpdateEntetyStatus.NotUpdate: return BadRequest("Camera auto the value is the same.");
-                case UpdateEntetyStatus.Updated:
+                case UpdateEntetyStatus.notExist: return BadRequest("The camera not exsist.");
+                case UpdateEntetyStatus.notUpdate: return BadRequest("Camera auto the value is the same.");
+                case UpdateEntetyStatus.updated:
                     {
                         // Ставил либо снимаем задачу
                         if (status == AutoLoadStatus.on)
-                            AutoLoadChannelTaskManager.Instance.SetOnAutoload(brigadeCode);
+                            AutoLoadVideoTaskManager.Instance.SetOnAutoload(brigadeCode, cameraNum);
                         else
-                            AutoLoadChannelTaskManager.Instance.SetOffAutoload(brigadeCode);
+                            AutoLoadVideoTaskManager.Instance.SetOffAutoload(brigadeCode, cameraNum);
                         return Ok();
                     };
                 default: return BadRequest("Unknown error");

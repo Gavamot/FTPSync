@@ -8,8 +8,8 @@ namespace FtpSync.Entety
 {
     public enum UpdateEntetyStatus
     {
-        NotExist = 1,
-        NotUpdate = 2,
-        Updated = 3
+        notExist = 1,
+        notUpdate = 2,
+        updated = 3
     }
 }

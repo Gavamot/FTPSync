@@ -85,11 +85,12 @@ namespace FtpSync.Controller
 
         private IHttpActionResult SetAuto(int brigadeCode, AutoLoadStatus status)
         {
+
             switch (VideoReg.UpdateChannelAuto(db, brigadeCode, status)) // Устанавливаем значение в БД
             {
-                case UpdateEntetyStatus.NotExist: return BadRequest("The video registrator not exsist.");
-                case UpdateEntetyStatus.NotUpdate: return BadRequest("Channel auto the value is the same.");
-                case UpdateEntetyStatus.Updated:
+                case UpdateEntetyStatus.notExist: return BadRequest("The video registrator not exsist.");
+                case UpdateEntetyStatus.notUpdate: return BadRequest("Channel auto the value is the same.");
+                case UpdateEntetyStatus.updated:
                     {
                         // Ставил либо снимаем задачу
                         if(status == AutoLoadStatus.on)

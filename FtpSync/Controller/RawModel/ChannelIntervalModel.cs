@@ -13,5 +13,4 @@ namespace FtpSync.Controller
         public int BrigadeCode { get; set; }
         public DateInterval Interval { get; set; }
     }
-
 }

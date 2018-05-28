@@ -71,13 +71,13 @@ namespace FtpSync.Entety
             {
                 var v = db.VideoReg.FirstOrDefault(x => x.BrigadeCode == brigadeCode);
                 if (v == null)
-                    return UpdateEntetyStatus.NotExist;
+                    return UpdateEntetyStatus.notExist;
                 if (v.ChannelAutoLoad == status)
-                    return UpdateEntetyStatus.NotUpdate;
+                    return UpdateEntetyStatus.notUpdate;
                 v.ChannelAutoLoad = status;
                 db.SaveChanges();
             }
-            return UpdateEntetyStatus.Updated;
+            return UpdateEntetyStatus.updated;
         }
     }
 }
