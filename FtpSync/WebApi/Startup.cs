@@ -3,17 +3,30 @@ using System.Web.Http;
 using Autofac;
 using Autofac.Integration.WebApi;
 using FtpSync.Controller;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Owin;
 
 namespace FtpSync
 {
     public class Startup
     {
+        // Для сериализации js обьектов с маленькой буквы
+        private void SetCamelCaseForAllSerialzedObjects(HttpConfiguration config)
+        {
+            var jsonSettings = config.Formatters.JsonFormatter.SerializerSettings;
+            jsonSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            jsonSettings.Formatting = Formatting.Indented;
+        }
+
+
         public void Configuration(IAppBuilder app)
         {
             // In OWIN you create your own HttpConfiguration rather than
             // re-using the GlobalConfiguration.
             var config = new HttpConfiguration();
+
+            SetCamelCaseForAllSerialzedObjects(config);
 
             config.Routes.MapHttpRoute(
                 "DefaultApi",

@@ -30,7 +30,8 @@ namespace FtpSync.Controller
 
         private IHttpActionResult SetAuto(int brigadeCode, int cameraNum, AutoLoadStatus status)
         {
-            switch (Camera.UpdateAuto(db, brigadeCode, cameraNum, status)) // Устанавливаем значение в БД
+            var val = Camera.UpdateAuto(brigadeCode, cameraNum, status);
+            switch (val) // Устанавливаем значение в БД
             {
                 case UpdateEntetyStatus.notExist: return BadRequest("The camera not exsist.");
                 case UpdateEntetyStatus.notUpdate: return BadRequest("Camera auto the value is the same.");
@@ -62,44 +63,45 @@ namespace FtpSync.Controller
         [HttpPost]
         public IHttpActionResult CancelTask([FromBody] VideoIntervalModel model)
         {
-            using (db)
+            Camera cam;
+            using (var db = new DataContext())
             {
                 // Поиск видеорегистратора в базе
-                var reg = db.Camera.Include(x=>x.VideoReg)
-                    .FirstOrDefault( x => 
-                        x.VideoReg.BrigadeCode == model.BrigadeCode && 
-                        x.Num == model.CameraNum );
-
-                if (reg == null)
-                {
-                    return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
-                }
-
-                // Выполнение операции
-                VideoTaskManager.Instance.CancelTask(reg, model.Interval);
+                cam = db.Camera.Include(x => x.VideoReg)
+                    .FirstOrDefault(x =>
+                        x.VideoReg.BrigadeCode == model.BrigadeCode &&
+                        x.Num == model.CameraNum);
             }
+            if (cam == null)
+            {
+                return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
+            }
+            // Выполнение операции
+            VideoTaskManager.Instance.CancelTask(cam, model.Interval);
             return Ok();
         }
 
         [HttpPost]
         public IHttpActionResult SyncByPeriod([FromBody] VideoIntervalModel model)//(int brigadeCode, string start, string end)
         {
-            using (db)
+            VideoReg reg = null;
+            using (var db = new DataContext())
             {
                 // Поиск видеорегистратора в базе
-                var reg = db.VideoReg
+                reg = db.VideoReg
                     .Include(x => x.Camers)
                     .FirstOrDefault(x => x.BrigadeCode == model.BrigadeCode);
-                if (reg == null)
-                {
-                    return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
-                }
-
-                // Выполнение операции
-                if (VideoTaskManager.Instance.SyncChannelsByPeriod(reg, model.CameraNum, model.Interval))
-                    return Ok();
-                return BadRequest($"{model.BrigadeCode} cam={model.CameraNum}({model.Interval}) - [ALREADY EXECUTE]");
             }
+
+            if (reg == null)
+            {
+                return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
+            }
+
+            // Выполнение операции
+            if (VideoTaskManager.Instance.SyncChannelsByPeriod(reg, model.CameraNum, model.Interval))
+                return Ok();
+            return BadRequest($"{model.BrigadeCode} cam={model.CameraNum}({model.Interval}) - [ALREADY EXECUTE]");
         }
 
         [HttpPost]
@@ -107,7 +109,7 @@ namespace FtpSync.Controller
         {
             Camera cam;
             // Меняем временную метку
-            using (db)
+            using (var db = new DataContext())
             {
                 cam = db.Camera.FirstOrDefault(x =>
                     x.VideoReg.BrigadeCode == model.BrigadeCode &&

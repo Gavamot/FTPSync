@@ -8,7 +8,7 @@ using FtpSync.TaskManager;
 
 namespace FtpSync.Controller
 {
-    public class ChannelController : MyController
+    public class ChannelValuesController : MyController
     {
         [HttpGet]
         public List<ChannelTask> GetTasks()

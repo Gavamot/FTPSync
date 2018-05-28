@@ -15,10 +15,8 @@ namespace FtpSync
 {
     public class ChannelTask
     {
-        [JsonProperty("brigadeCode")]
         public int BrigadeCode { get; set; }
 
-        [JsonProperty("interval")]
         public DateInterval Interval { get; set; }
 
         [JsonIgnore]

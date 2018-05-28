@@ -137,6 +137,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controller\ChannelValuesController.cs" />
     <Compile Include="Controller\RawModel\CameraModel.cs" />
     <Compile Include="Controller\RawModel\TimeStampChannelModel.cs" />
     <Compile Include="Controller\RawModel\TimeStampVideoModel.cs" />
@@ -149,6 +150,8 @@
     <Compile Include="Real\File\IFile.cs" />
     <Compile Include="TaskManager\AutoLoadVideoTaskManager.cs" />
     <Compile Include="TaskManager\AutoLoadChannelTaskManager.cs" />
+    <Compile Include="GlobalObjects\ChannelValueCash.cs" />
+    <Compile Include="TaskManager\ChannelTaskManager.cs" />
     <Compile Include="TaskManager\VideoTaskManager.cs" />
     <Compile Include="Controller\RawModel\ChannelIntervalModel.cs" />
     <Compile Include="Controller\VideoController.cs" />
@@ -157,11 +160,12 @@
     <Compile Include="Controller\VideoRegController.cs" />
     <Compile Include="DateExt.cs" />
     <Compile Include="Real\FileFactory.cs" />
-    <Compile Include="TaskManager\ChannelTaskManager.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Controller\ChannelController.cs" />
     <Compile Include="Real\File\FileVdeoMp4.cs" />
+    <Compile Include="Value\BrigadeChannelValue.cs" />
+    <Compile Include="Value\ChannelValue.cs" />
     <Compile Include="Value\Folder.cs" />
     <Compile Include="Value\DateInterval.cs" />
     <Compile Include="Value\LocalFolder.cs" />
@@ -181,7 +185,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Real\FtpLoader.cs" />
-    <Compile Include="Real\TestVideoRegRepositoty.cs" />
     <Compile Include="WebApi\SecondMiddleware.cs" />
     <Compile Include="WebApi\Startup.cs" />
     <Compile Include="Value\FtpSettings.cs" />
@@ -224,6 +227,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

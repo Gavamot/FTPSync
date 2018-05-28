@@ -15,7 +15,6 @@ namespace FtpSync.TaskManager
 {
     public class AutoLoadChannelTask
     {
-        [JsonProperty("brigadeCode")]
         public int BrigadeCode { get; set; }
 
         [JsonIgnore]

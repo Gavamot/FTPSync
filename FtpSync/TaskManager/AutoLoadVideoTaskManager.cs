@@ -15,10 +15,8 @@ namespace FtpSync.TaskManager
 {
     public class AutoLoadVideoTask
     {
-        [JsonProperty("brigadeCode")]
         public int BrigadeCode { get; set; }
 
-        [JsonProperty("cameraNum")]
         public int CameraNum { get; set; }
 
         [JsonIgnore]

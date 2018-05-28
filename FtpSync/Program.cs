@@ -73,21 +73,21 @@ namespace FtpSync
             }
             catch { }
 
-            try
-            {
-                type.InvokeMember("m_userDefaultCulture",
-                    BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Static,
-                    null,
-                    culture,
-                    new object[] { culture });
+            //try
+            //{
+            //    type.InvokeMember("m_userDefaultCulture",
+            //        BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Static,
+            //        null,
+            //        culture,
+            //        new object[] { culture });
 
-                type.InvokeMember("m_userDefaultUICulture",
-                    BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Static,
-                    null,
-                    culture,
-                    new object[] { culture });
-            }
-            catch { }
+            //    type.InvokeMember("m_userDefaultUICulture",
+            //        BindingFlags.SetField | BindingFlags.NonPublic | BindingFlags.Static,
+            //        null,
+            //        culture,
+            //        new object[] { culture });
+            //}
+            //catch { }
         }
 
         // Запуск служб автоподкачки

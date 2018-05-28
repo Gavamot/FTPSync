@@ -23,6 +23,7 @@ namespace FtpSync.Entety
         // Настройки FTP
         [Required]
         [MaxLength(24)]
+        [JsonProperty("ip")]
         public string Ip { get; set; }
 
         [Required]
@@ -46,6 +47,8 @@ namespace FtpSync.Entety
         [MaxLength(500)]
         public string VideoFolder { get; set; }
 
+        public AutoLoadStatus UpdateChannelValues { get; set; }
+
         /// <summary>
         /// Добавил сразу же камеры с 0 по 10
         /// </summary>
@@ -65,9 +68,9 @@ namespace FtpSync.Entety
             return res;
         }
 
-        public static UpdateEntetyStatus UpdateChannelAuto(DataContext db, int brigadeCode, AutoLoadStatus status)
+        public static UpdateEntetyStatus UpdateChannelAuto(int brigadeCode, AutoLoadStatus status)
         {
-            using (db)
+            using (var db = new DataContext())
             {
                 var v = db.VideoReg.FirstOrDefault(x => x.BrigadeCode == brigadeCode);
                 if (v == null)

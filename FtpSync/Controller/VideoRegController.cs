@@ -11,7 +11,7 @@ namespace FtpSync.Controller
         [HttpPost]
         public IHttpActionResult Add(VideoReg videoReg)
         {
-            using (db)
+            using (var db = new DataContext())
             {
                 videoReg.Camers = new List<Camera>();
                 for (int i = 0; i < 10; i++)
@@ -28,7 +28,7 @@ namespace FtpSync.Controller
         [HttpPost]
         public IHttpActionResult Update(VideoReg videoReg)
         {
-            using (db)
+            using (var db = new DataContext())
             {
                 var v = db.VideoReg.FirstOrDefault(x => x.Id == videoReg.Id);
                 if (v == null)
@@ -50,7 +50,7 @@ namespace FtpSync.Controller
         [HttpPost]
         public IHttpActionResult Delete([FromBody]int id)
         {
-            using (db)
+            using (var db = new DataContext())
             {
                 // Каскадное удалене
                 // Извлечь нужного покупателя из таблицы вместе с заказами
@@ -72,7 +72,7 @@ namespace FtpSync.Controller
         [HttpGet]
         public VideoReg Get(int id)
         {
-            using (db)
+            using (var db = new DataContext())
             {
                 VideoReg res = db.VideoReg
                     .Include(x => x.Camers)
@@ -84,7 +84,7 @@ namespace FtpSync.Controller
         [HttpGet]
         public IEnumerable<VideoReg> GetAll()
         {
-            using (db)
+            using (var db = new DataContext())
             {
                 var res = db.VideoReg
                     .Include(x=>x.Camers)

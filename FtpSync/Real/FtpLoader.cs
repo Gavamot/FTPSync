@@ -18,6 +18,42 @@ namespace FtpSync.Real
         protected FtpSettings Settings { get; private set; }
         protected FtpClient Client { get; private set; }
 
+        private bool isDisposed = false;
+
+        ~FtpLoader()
+        {
+            Cleanup(false);
+        }
+
+        public void Cleanup(bool isDispose)
+        {
+            if (!isDisposed)
+            {
+                try
+                {
+                    Client.Disconnect();
+                    Client.Dispose();
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e, "[ERROR] FtpLoader.Cleanup()");
+                }
+
+                if (isDispose)
+                {
+
+                }
+            }
+
+            isDisposed = true;
+        }
+
+        public void Dispose()
+        {
+            Cleanup(true);
+            GC.SuppressFinalize(this);
+        }
+
         public FtpLoader() { }
         public FtpLoader(FtpSettings settings)
         {
@@ -58,66 +94,54 @@ namespace FtpSync.Real
                 {
                     cts?.Token.ThrowIfCancellationRequested();
 
-                    if (remoteFile.Type == FtpFileSystemObjectType.File)
-                    {
-                        string localFile = remoteFile.FullName.Replace("/", "\\")
-                            .Replace(remoteRoot.Replace("/", "\\"), localRoot.Replace("/", "\\")); 
+                    if (remoteFile.Type != FtpFileSystemObjectType.File) continue;
 
-                        // Проверяем файл на соответствие формату
-                        IFile f;
+                    string localFile = remoteFile.FullName.Replace("/", "\\")
+                        .Replace(remoteRoot.Replace("/", "\\"), localRoot.Replace("/", "\\")); 
+
+                    // Проверяем файл на соответствие формату
+                    IFile f;
+                    try
+                    {
+                        f = FileFactory.Create(remoteFile.Name);
+                    }
+                    catch (FormatException e)
+                    {
+                        logger.Error(e, $"{ localFile } haves bad format [ERROR]");
+                        continue;
+                    }
+                         
+                    // Копируем файл
+                    if (!f.IsComplete) // Файл не полностью записан
+                    {
+                        logger.Info($" {f} [MISS] - not completed");
+                    }
+                    else if (!f.IsInInterval(interval)) // Не входит в  интервал
+                    {
+                        //logger.Info($" {f} [MISS] - Exists in the server");
+                    }
+                    else if(System.IO.File.Exists(localFile)) // Нет в папке на сервере
+                    {
+                        logger.Info($" {f} [MISS] - exists in the server");
+                        res.Add(f);
+                    }
+                    else //Переносим файл
+                    {
                         try
                         {
-                            f = FileFactory.Create(remoteFile.Name);
-                        }
-                        catch (FormatException e)
-                        {
-                            logger.Error(e, $"{ localFile } haves bad format [ERROR]");
-                            continue;
-                        }
-                         
-                        // Копируем файл
-                        if (!f.IsComplete) // Файл не полностью записан
-                        {
-                            logger.Info($" {f} [MISS] - not completed");
-                        }
-                        else if (!f.IsInInterval(interval)) // Не входит в интервал
-                        {
-                            //logger.Info($" {f} [MISS] - Exists in the server");
-                        }
-                        else if(System.IO.File.Exists(localFile)) // Нет в папке на сервере
-                        {
-                            logger.Info($" {f} [MISS] - exists in the server");
+                            Client.DownloadFile(localFile, remoteFile.FullName);
                             res.Add(f);
+                            logger.Info($"{f} [OK]");
                         }
-                        else //Переносим файл
+                        catch (Exception e)
                         {
-                            try
-                            {
-                                Client.DownloadFile(localFile, remoteFile.FullName);
-                                res.Add(f);
-                                logger.Info($"{f} [OK]");
-                            }
-                            catch (Exception e)
-                            {
-                                logger.Error(e, $"copy {f} [ERROR]");
-                            }
+                            logger.Error(e, $"copy {f} [ERROR]");
                         }
                     }
 
                 }
             }
             return res;
-        }
-
-        public void Disconnect()
-        {
-            Client.Disconnect();
-            Client.Dispose();
-        }
-
-        public void Dispose()
-        {
-            Disconnect();
         }
     }
 }

@@ -9,7 +9,8 @@ using FtpSync.Entety;
 
 namespace FtpSync
 {
-    public class DataContext : DbContext
+    public class DataContext 
+        : DbContext
     {
         public DataContext() : base("DefaultConnection")
         {

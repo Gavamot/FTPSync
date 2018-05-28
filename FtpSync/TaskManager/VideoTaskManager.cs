@@ -15,13 +15,10 @@ namespace FtpSync
 {
     public class VideolTask
     {
-        [JsonProperty("brigadeCode")]
         public int BrigadeCode { get; set; }
 
-        [JsonProperty("interval")]
         public DateInterval Interval { get; set; }
 
-        [JsonProperty("cameraNum")]
         public int CameraNum { get; set; }
 
         [JsonIgnore]

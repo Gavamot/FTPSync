@@ -10,7 +10,6 @@ namespace FtpSync.Controller
 {
     public class MyController : ApiController
     {
-        internal readonly DataContext db = new DataContext();
         internal static readonly Logger logger = LogManager.GetCurrentClassLogger();
     }
 }
