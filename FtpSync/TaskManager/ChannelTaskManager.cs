@@ -13,21 +13,21 @@ using NLog;
 
 namespace FtpSync
 {
-    public class ChannelTask
+    public class ChannelTaskManager
     {
-        public int BrigadeCode { get; set; }
+        public class ChannelTask
+        {
+            public int BrigadeCode { get; set; }
 
-        public DateInterval Interval { get; set; }
+            public DateInterval Interval { get; set; }
 
-        [JsonIgnore]
-        public Task Task { get; set; }
+            [JsonIgnore]
+            public Task Task { get; set; }
 
-        [JsonIgnore]
-        public CancellationTokenSource Cts { get; set; }
-    }
+            [JsonIgnore]
+            public CancellationTokenSource Cts { get; set; }
+        }
 
-    class ChannelTaskManager
-    {
         private static readonly ChannelTaskManager instance = new ChannelTaskManager();
         private ChannelTaskManager() { }
         public static ChannelTaskManager Instance => instance;

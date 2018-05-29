@@ -12,7 +12,7 @@ namespace FtpSync
         private ChannelValueCash() { }
         public static ChannelValueCash Instance => instance;
         volatile List<BrigadeChannelValue> Cash = new List<BrigadeChannelValue>();
-        private object obj = new object();
+        private object lockObj = new object();
 
         public BrigadeChannelValue Get(int brigadeCode)
         {
@@ -26,26 +26,21 @@ namespace FtpSync
             return res;
         }
 
-        public void Set(int brigadeCode, DateTime actual, List<ChannelValue> channelValues)
+        public void Set(BrigadeChannelValue val)
         {
             var cash = Cash;
-            lock (obj)
+            lock (lockObj)
             {
-                var item = cash.FirstOrDefault();
+                var item = cash.FirstOrDefault(x=> x.BrigadeCode == val.BrigadeCode);
                 if (item == null)
                 {
-                    item = new BrigadeChannelValue
-                    {
-                        BrigadeCode = brigadeCode,
-                        Actual = actual,
-                        Channels = channelValues
-                    };
-                    cash.Add(item);
+                    cash.Add(val);
                 }
                 else
                 {
-                    item.Actual = actual;
-                    item.Channels = channelValues;
+                    item.LastActual = item.Actual;
+                    item.Actual = val.Actual;
+                    item.Channels = val.Channels;
                 }
             }
         }

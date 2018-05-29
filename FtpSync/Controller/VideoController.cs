@@ -15,9 +15,9 @@ namespace FtpSync.Controller
     public class VideoController : MyController
     {
         [HttpGet]
-        public List<VideolTask> GetTasks()
+        public List<VideoTaskManager.VideolTask> GetTasks()
         {
-            List<VideolTask> res = VideoTaskManager.Instance.GetAll;
+            List<VideoTaskManager.VideolTask> res = VideoTaskManager.Instance.GetAll;
             return res;
         }
 

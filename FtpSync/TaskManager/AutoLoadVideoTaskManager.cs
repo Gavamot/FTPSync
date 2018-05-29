@@ -13,7 +13,7 @@ using NLog;
 
 namespace FtpSync.TaskManager
 {
-    public class AutoLoadVideoTask
+    public class AutoLoadVideoTask 
     {
         public int BrigadeCode { get; set; }
 
@@ -60,23 +60,16 @@ namespace FtpSync.TaskManager
                      
                     t.Task = new Task(async (token) =>
                     {
+                        logger.Info($"Task [{brigadeCode}({cameraNum})] autoupdate video was started");
                         using (var loader = AutoFileLoader.CreateVideoAutoLoader(brigadeCode, cameraNum))
                         {
-                            try
+                            while (!cts.IsCancellationRequested)
                             {
-                                logger.Info($"Task [{brigadeCode}({cameraNum})] autoupdate video was started");
-                                while (true)
-                                {
-                                    cts.Token.ThrowIfCancellationRequested();
-                                    loader.Load();
-                                    await Task.Delay(Program.config.VideoAutoDelayMs, cts.Token);
-                                }
-                            }
-                            catch (OperationCanceledException e)
-                            {
-                                logger.Info($"Task [{brigadeCode}] autoupdate video was canseled");
+                                loader.Load();
+                                await Task.Delay(Program.config.VideoAutoDelayMs, cts.Token);
                             }
                         }
+                        logger.Info($"Task [{brigadeCode}] autoupdate video was canseled");
                     }, cts.Token);
 
                     t.Task.Start();

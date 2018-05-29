@@ -128,9 +128,15 @@ namespace FtpSync
                 {
                     Parallel.ForEach(db.VideoReg, reg =>
                     {
+                        // Автодокачка каналов
                         if (reg.ChannelAutoLoad == AutoLoadStatus.on)
                         {
                             AutoLoadChannelTaskManager.Instance.OnAutoload(reg.BrigadeCode);
+                        }
+                        // Автодокачка текущих значений
+                        if (reg.UpdateChannelValues == AutoLoadStatus.on)
+                        {
+                            DeviceDataTaskManager.Instance.SetOn(reg);
                         }
                     });
                 }

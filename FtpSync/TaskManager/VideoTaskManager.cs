@@ -13,23 +13,19 @@ using NLog;
 
 namespace FtpSync
 {
-    public class VideolTask
+    public class VideoTaskManager
     {
-        public int BrigadeCode { get; set; }
+        public class VideolTask
+        {
+            public int BrigadeCode { get; set; }
+            public DateInterval Interval { get; set; }
+            public int CameraNum { get; set; }
+            [JsonIgnore]
+            public Task Task { get; set; }
+            [JsonIgnore]
+            public CancellationTokenSource Cts { get; set; }
+        }
 
-        public DateInterval Interval { get; set; }
-
-        public int CameraNum { get; set; }
-
-        [JsonIgnore]
-        public Task Task { get; set; }
-
-        [JsonIgnore]
-        public CancellationTokenSource Cts { get; set; }
-    }
-
-    class VideoTaskManager
-    {
         private static readonly VideoTaskManager instance = new VideoTaskManager();
         private VideoTaskManager() { }
         public static VideoTaskManager Instance => instance;

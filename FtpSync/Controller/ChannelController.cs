@@ -11,16 +11,16 @@ namespace FtpSync.Controller
     public class ChannelController : MyController
     {
         [HttpGet]
-        public List<ChannelTask> GetTasks()
+        public List<ChannelTaskManager.ChannelTask> GetTasks()
         {
-            List<ChannelTask> res = ChannelTaskManager.Instance.GetAll;
+            List<ChannelTaskManager.ChannelTask> res = ChannelTaskManager.Instance.GetAll;
             return res;
         }
 
         [HttpGet]
-        public List<AutoLoadChannelTask> GetAutoLoadTasks()
+        public List<AutoLoadChannelTaskManager.AutoLoadChannelTask> GetAutoLoadTasks()
         {
-            List<AutoLoadChannelTask> res = AutoLoadChannelTaskManager.Instance.GetAll;
+            List<AutoLoadChannelTaskManager.AutoLoadChannelTask> res = AutoLoadChannelTaskManager.Instance.GetAll;
             return res;
         }
 

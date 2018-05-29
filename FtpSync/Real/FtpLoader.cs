@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http.Formatting;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
@@ -141,6 +142,14 @@ namespace FtpSync.Real
 
                 }
             }
+            return res;
+        }
+
+        public string DownloadFile(string remotePath)
+        {
+            byte[] outBytes;
+            Client.Download(out outBytes, remotePath);
+            string res = Encoding.Default.GetString(outBytes);
             return res;
         }
     }

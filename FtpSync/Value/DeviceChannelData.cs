@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FtpSync.Value
 {
-    public class ChannelValue
+    public class DeviceChannelData
     {
         public int Code { get; set; }
         public int Num { get; set; }

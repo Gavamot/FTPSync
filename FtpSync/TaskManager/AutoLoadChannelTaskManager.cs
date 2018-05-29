@@ -13,19 +13,19 @@ using NLog;
 
 namespace FtpSync.TaskManager
 {
-    public class AutoLoadChannelTask
+    public class AutoLoadChannelTaskManager
     {
-        public int BrigadeCode { get; set; }
+        public class AutoLoadChannelTask
+        {
+            public int BrigadeCode { get; set; }
 
-        [JsonIgnore]
-        public Task Task { get; set; }
+            [JsonIgnore]
+            public Task Task { get; set; }
 
-        [JsonIgnore]
-        public CancellationTokenSource Cts { get; set; }
-    }
+            [JsonIgnore]
+            public CancellationTokenSource Cts { get; set; }
+        }
 
-    class AutoLoadChannelTaskManager
-    {
         private static readonly AutoLoadChannelTaskManager instance = new AutoLoadChannelTaskManager();
         private AutoLoadChannelTaskManager() { }
         public static AutoLoadChannelTaskManager Instance => instance;
@@ -58,29 +58,21 @@ namespace FtpSync.TaskManager
                 t.Cts = cts;
 
                 t.Task = new Task(async ()=> {
+                    logger.Info($"Task [{brigadeCode}] autoupdate channel was started");
                     using (var loader = AutoFileLoader.CreateChannelAutoLoader(brigadeCode))
                     {
-                        try
+                        while (!cts.IsCancellationRequested)
                         {
-                            logger.Info($"Task [{brigadeCode}] autoupdate channel was started");
-                            while (true)
-                            {
-                                cts.Token.ThrowIfCancellationRequested();
-                                loader.Load(cts);
-                                await Task.Delay(Program.config.ChannelAutoDelayMs, cts.Token);
-                            }
-                        }
-                        catch (OperationCanceledException e)
-                        {
-                            logger.Info($"Task [{brigadeCode}] autoupdate channel was canseled");
+                            loader.Load(cts);
+                            await Task.Delay(Program.config.ChannelAutoDelayMs, cts.Token);
                         }
                     }
-
                     lock (tasksLock)
                     {
                         // Удаляем задачу из списка
                         tasks.RemoveAll(x => x.BrigadeCode == brigadeCode);
                     }
+                    logger.Info($"Task [{brigadeCode}] autoupdate channel was canseled");
                 }, cts.Token);
 
                 tasks.Add(t);
