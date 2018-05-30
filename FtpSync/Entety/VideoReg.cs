@@ -14,6 +14,7 @@ namespace FtpSync.Entety
     [Table("VideoReg")]
     public class VideoReg
     {
+        [JsonIgnore]
         public int Id { get; set; }
 
         [Required]
@@ -38,16 +39,21 @@ namespace FtpSync.Entety
 
         // Каталоги для перекачки если null то незакачивать
         [MaxLength(500)]
-        public string ChannelFolder { get; set; }
+        public string ChannelFolder { get; set; } = "/channels";
 
         public AutoLoadStatus ChannelAutoLoad { get; set; }
 
         public DateTime? ChannelTimeStamp { get; set; }
 
         [MaxLength(500)]
-        public string VideoFolder { get; set; }
+        public string VideoFolder { get; set; } = "/video";
 
         public AutoLoadStatus UpdateChannelValues { get; set; }
+
+        /// <summary>
+        /// Путь к файлу с текущими данными с прибора на видеорегистраторах 
+        /// </summary>
+        public string ValuesFile { get; set; } = "/values.txt";
 
         /// <summary>
         /// Добавил сразу же камеры с 0 по 10

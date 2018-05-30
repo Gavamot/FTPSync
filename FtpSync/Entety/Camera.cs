@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace FtpSync.Entety
 {
@@ -14,6 +15,7 @@ namespace FtpSync.Entety
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [JsonIgnore]
         public int Id { get; set; }
 
         [Required]
@@ -37,21 +39,5 @@ namespace FtpSync.Entety
         {
             return $"{Id}) cam {Num} TimeStamp = {TimeStamp:yyyy-MM-dd HH:mm:ss} auto = {AutoLoadVideo}";
         }
-
-        public static UpdateEntetyStatus UpdateAuto(int brigadeCode, int cameraNum, AutoLoadStatus status)
-        {
-            using (var db = new DataContext())
-            {
-                var v = db.Camera.FirstOrDefault(x => x.VideoReg.BrigadeCode == brigadeCode && x.Num == cameraNum);
-                if (v == null)
-                    return UpdateEntetyStatus.notExist;
-                if (v.AutoLoadVideo == status)
-                    return UpdateEntetyStatus.notUpdate;
-                v.AutoLoadVideo = status;
-                db.SaveChanges();
-            }
-            return UpdateEntetyStatus.updated;
-        }
-
     }
 }

@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FtpSync.Entety;
 using FtpSync.TaskManager;
+using FtpSync.Value;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using NLog;
@@ -23,6 +24,27 @@ namespace FtpSync
 
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public static readonly Config config = ReadConfig();
+
+        // Получить все катологи  
+        static void Main(string[] args)
+        {
+            SetDefaultCulture();
+
+            //  Глобальный обработчик ошибок
+            AppDomain.CurrentDomain.UnhandledException += ProcessException;
+
+            // Запуск служб автоподкачки
+            StartAuto();
+
+            // Запускаем web Api 2
+            var host = WebApp.Start<Startup>(config.Host);
+            logger.Info($"Wep Api 2 started on host {config.Host}");
+
+            while (true)
+            {
+                Console.ReadKey();
+            }
+        }
 
         static Config ReadConfig()
         {
@@ -98,27 +120,6 @@ namespace FtpSync
             Thread.Sleep(500);
         }
 
-        // Получить все катологи  
-        static void Main(string[] args)
-        {
-            SetDefaultCulture();
-
-            //  Глобальный обработчик ошибок
-            AppDomain.CurrentDomain.UnhandledException += ProcessException;
-
-            // Запуск служб автоподкачки
-            StartAuto();
-
-            // Запускаем web Api 2
-            var host = WebApp.Start<Startup>(config.Host);
-            logger.Info($"Wep Api 2 started on host {config.Host}");
-
-            while (true)
-            {
-                Console.ReadKey();
-            }
-        }
-
         static void StartAutoChannel()
         {
             logger.Info("Start auto loading channel");
@@ -162,6 +163,21 @@ namespace FtpSync
             });
         }
 
+        static void TestCreateFileDeviceValues()
+        {
+            var a = new BrigadeChannelValue();
+            a.Actual = DateTime.Now;
+            a.BrigadeCode = 111;
+            a.Channels = new List<DeviceChannelData>();
+            for (int i = 0; i < 10; i++)
+            {
+                double v = new Random(DateTime.Now.Millisecond).NextDouble();
+                a.Channels.Add(new DeviceChannelData { Code = i, Num = 0, Value = v });
+            }
+            var str = JsonConvert.SerializeObject(a);
+            File.WriteAllText("values.txt", str);
+        }
+
         static void TestWebApi()
         {
             logger.Info($"HOST {config.Host} was starting...");
@@ -202,7 +218,6 @@ namespace FtpSync
                     AutoLoadVideo = 0,
                     TimeStamp = DateTime.Now,
                 };
-
                 var c2 = new Camera
                 {
                     VideoReg = v,

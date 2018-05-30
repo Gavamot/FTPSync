@@ -35,7 +35,8 @@ namespace FtpSync
             var builder = new ContainerBuilder();
 
             // Register Web API controller in executing assembly.
-            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+            var dataAccess = Assembly.GetExecutingAssembly();
+            builder.RegisterApiControllers(dataAccess);
 
             // OPTIONAL - Register the filter provider if you have custom filters that need DI.
             // Also hook the filters up to controllers.
@@ -44,6 +45,9 @@ namespace FtpSync
                 .AsWebApiActionFilterFor<ChannelController>()
                 .InstancePerRequest();
 
+            builder.RegisterAssemblyTypes(dataAccess)
+                .Where(t => t.Name.EndsWith("Rep"))
+                .AsImplementedInterfaces();
 
             // Register a logger service to be used by the controller and middleware.
             //builder.Register(c => new Logger()).As<ILogger>().InstancePerRequest();

@@ -28,10 +28,5 @@ namespace FtpSync
         /// Задержка между итерациями автозагрузки видео файлов
         /// </summary>
         public int VideoAutoDelayMs { get; set; } = 60000;
-
-        /// <summary>
-        /// Путь к файлу с текущими данными с прибора на видеорегистраторах 
-        /// </summary>
-        public string ValuesFilePath { get; set; } = "D:\\values.txt";
     }
 }

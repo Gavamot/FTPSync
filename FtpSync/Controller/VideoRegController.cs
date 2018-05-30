@@ -3,94 +3,56 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.Http;
 using FtpSync.Entety;
+using FtpSync.Repositories.Interfaces;
 
 namespace FtpSync.Controller
 {
     public class VideoRegController : MyController
     {
+        readonly IVideoRegRep regRep;
+        public VideoRegController(IVideoRegRep videoRegRep)
+        {
+            this.regRep = videoRegRep;
+        }
+
         [HttpPost]
         public IHttpActionResult Add(VideoReg videoReg)
         {
-            using (var db = new DataContext())
-            {
-                videoReg.Camers = new List<Camera>();
-                for (int i = 0; i < 10; i++)
-                {
-                    var cam = new Camera {Num = i};
-                    videoReg.Camers.Add(cam);
-                }
-                db.VideoReg.Add(videoReg);
-                db.SaveChanges();
-            }
+            regRep.Add(videoReg);
             return Ok();
         }
 
         [HttpPost]
         public IHttpActionResult Update(VideoReg videoReg)
         {
-            using (var db = new DataContext())
-            {
-                var v = db.VideoReg.FirstOrDefault(x => x.Id == videoReg.Id);
-                if (v == null)
-                    return BadRequest("The video registrator not exsist.");
+            var res = regRep.Update(videoReg);
+            if (res == UpdateEntetyStatus.updated)
+                return Ok();
+            return BadRequest("Video registrator not found.");
 
-                v.VideoFolder = videoReg.VideoFolder;
-                v.BrigadeCode = videoReg.BrigadeCode;
-                v.Ip = videoReg.Ip;
-                v.VideoFolder = videoReg.VideoFolder;
-                v.ChannelAutoLoad = videoReg.ChannelAutoLoad;
-                v.ChannelTimeStamp = videoReg.ChannelTimeStamp;
-                v.Password = videoReg.Password;
-                v.User = videoReg.User;
-                db.SaveChanges();
-            }
-            return Ok();
         }
 
         [HttpPost]
-        public IHttpActionResult Delete([FromBody]int id)
+        public IHttpActionResult Delete([FromBody]int brigadeCode)
         {
-            using (var db = new DataContext())
-            {
-                // Каскадное удалене
-                // Извлечь нужного покупателя из таблицы вместе с заказами
-                VideoReg customer = db.VideoReg
-                    .Include(x => x.Camers)
-                    .FirstOrDefault(x => x.Id == id);
-
-                // Удалить этого покупателя
-                if (customer != null)
-                {
-                    db.VideoReg.Remove(customer);
-                    db.SaveChanges();
-                    return Ok();
-                }
-            }
+            var res = regRep.Delete(brigadeCode);
+            if (res == UpdateEntetyStatus.updated)
+                return Ok();
             return BadRequest("Video registrator not found.");
         }
 
         [HttpGet]
-        public VideoReg Get(int id)
+        public VideoReg Get(int brigadeCode)
         {
-            using (var db = new DataContext())
-            {
-                VideoReg res = db.VideoReg
-                    .Include(x => x.Camers)
-                    .FirstOrDefault(x => x.Id == id);
-                return res;
-            }         
+            var res = regRep.Get(brigadeCode);
+            return res;
         }
 
         [HttpGet]
         public IEnumerable<VideoReg> GetAll()
         {
-            using (var db = new DataContext())
-            {
-                var res = db.VideoReg
-                    .Include(x=>x.Camers)
-                    .ToList();
-                return res;
-            }
+            var res = regRep.GetAll();
+            return res;
         }
     }
 }

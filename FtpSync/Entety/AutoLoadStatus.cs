@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace FtpSync.Entety
 {
+    /// <summary>
+    /// Статус автоматической загрузки данных
+    /// </summary>
     public enum AutoLoadStatus
     {
         off = 0,

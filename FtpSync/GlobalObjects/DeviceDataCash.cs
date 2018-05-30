@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace FtpSync
 {
-    public class ChannelValueCash
+    public class DeviceDataCash
     {
-        private static readonly ChannelValueCash instance = new ChannelValueCash();
-        private ChannelValueCash() { }
-        public static ChannelValueCash Instance => instance;
+        private static readonly DeviceDataCash instance = new DeviceDataCash();
+        private DeviceDataCash() { }
+        public static DeviceDataCash Instance => instance;
         volatile List<BrigadeChannelValue> Cash = new List<BrigadeChannelValue>();
         private object lockObj = new object();
 
@@ -31,6 +31,7 @@ namespace FtpSync
             var cash = Cash;
             lock (lockObj)
             {
+
                 var item = cash.FirstOrDefault(x=> x.BrigadeCode == val.BrigadeCode);
                 if (item == null)
                 {

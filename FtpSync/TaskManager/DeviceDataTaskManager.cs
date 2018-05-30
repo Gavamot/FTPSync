@@ -30,64 +30,108 @@ namespace FtpSync
 
         volatile object tasksLock = new object();
         volatile List<DeviceDataTask> tasks = new List<DeviceDataTask>();
-        private readonly string filePath = Program.config.ValuesFilePath;
+      
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public List<DeviceDataTask> GetAll => tasks;
 
-        public bool SetOn(VideoReg video)
+        private void DeleteTask(int brigadeCode)
+        {
+            lock (tasksLock)
+            {
+                var task = tasks.First(x => x.BrigadeCode == brigadeCode);
+                tasks.Remove(task);
+            }
+        }
+
+        private void AddTask(DeviceDataTask task)
+        {
+            lock (tasksLock)
+            {
+                // Проверем выполняется ли в данный момент аналогичная задача если да то не надо ее дублировать
+                DeviceDataTask oldTask = tasks.FirstOrDefault(x => x.BrigadeCode == task.BrigadeCode);
+                if (oldTask != null)
+                {
+                    return;
+                }
+                // Ставим задачу на выполнение
+                tasks.Add(task);
+            }
+        }
+        public bool SetOn(VideoReg reg)
         {
             var cts = new CancellationTokenSource();
+            // Задача постоянного обновления кеша данных с приборов 
             var task = new Task(() =>
             {
-                logger.Info($"Task [{video.BrigadeCode}] autoupdate channel values was started");
-                using (var ftp = FtpLoader.Start(video.FtpSettings))
+                logger.Info($"Task [{reg.BrigadeCode}] autoupdate device values was started");
+                if (string.IsNullOrEmpty(reg.ValuesFile))
+                {
+                    logger.Info($"Task [{reg.BrigadeCode}] autoupdate device values. File name is uncorrect.");
+                    DeleteTask(reg.BrigadeCode);
+                    return;
+                }
+                using (var ftp = FtpLoader.Start(reg.FtpSettings))
                 {
                     while (!cts.IsCancellationRequested)
                     {
-                        string strJson = ftp.DownloadFile(filePath);
-                        var obj = JsonConvert.DeserializeObject<BrigadeChannelValue>(strJson);
-                        ChannelValueCash.Instance.Set(obj);
+                        string strJson = "";
+                        try
+                        {
+                            strJson = ftp.DownloadFile(reg.ValuesFile);
+                        }
+                        catch (Exception e)
+                        {
+                            logger.Error(e, $"Task [{reg.BrigadeCode}] autoupdate device values. Faild load file {reg.ValuesFile} [ERROR]");
+                        }
+                        BrigadeChannelValue obj = null;
+                        try
+                        {
+                            obj = JsonConvert.DeserializeObject<BrigadeChannelValue>(strJson);
+                        }
+                        catch (Exception e)
+                        {
+                            logger.Error(e, $"Task [{reg.BrigadeCode}] autoupdate device values. Faild load file {reg.ValuesFile} [ERROR]");
+                            return;
+                        }
+                       
+                        if (obj.BrigadeCode != reg.BrigadeCode)
+                        { 
+
+                            logger.Error($"[IMPORTANT] Task [{reg.BrigadeCode}]  Database data not equals device brigadeCode [ERROR]");
+                        }
+
+                        DeviceDataCash.Instance.Set(obj);
                     }
-                }           
-                logger.Info($"Task [{video.BrigadeCode}] autoupdate channel values was canceled");
+                }
+                // Если задача была отменена убераем ее с выполнения  
+                DeleteTask(reg.BrigadeCode);
+                logger.Info($"Task [{reg.BrigadeCode}] autoupdate device values was canceled");
             }, cts.Token);
 
             DeviceDataTask newTask = new DeviceDataTask
             {
-                BrigadeCode = video.BrigadeCode,
+                BrigadeCode = reg.BrigadeCode,
                 Task = task,
                 Cts = cts 
             };
 
-            lock (tasksLock)
-            {
-                // Проверем выполняется ли в данный момент аналогичная задача если да то не надо ее дублировать
-                DeviceDataTask oldTask = tasks.FirstOrDefault(x => x.BrigadeCode == video.BrigadeCode);
-                if (oldTask != null)
-                {
-                    return false;
-                }
-                // Ставим задачу на выполнение
-                tasks.Add(newTask);
-                newTask.Task.Start();
-            }
-
-            logger.Info($"OnAutoUpdateChannelValue({video.BrigadeCode}) [EXECUTION]");
+            newTask.Task.Start();
+            AddTask(newTask);
+            logger.Info($"OnAutoUpdateChannelValue({reg.BrigadeCode}) [EXECUTION]");
             return true;
         }
-
         public void SetOff(int brigadeCode)
         {
             lock (tasksLock)
             {
                 // Отменяем задачу
-                var t = tasks.FirstOrDefault(x => x.BrigadeCode == brigadeCode);
-                if (t == null)
+                var task = tasks.FirstOrDefault(x => x.BrigadeCode == brigadeCode);
+                if (task == null)
                     return;
-                t.Cts.Cancel();
+                task.Cts.Cancel();
                 // Удаляем задачу из списка
-                tasks.Remove(t);
+                tasks.Remove(task);
             }
         }
     }

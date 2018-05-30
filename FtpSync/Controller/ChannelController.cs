@@ -3,6 +3,8 @@ using System.Linq;
 using System.Web.Http;
 using FtpSync.Controller.RawModel;
 using FtpSync.Entety;
+using FtpSync.Interface;
+using FtpSync.Repositories.Interfaces;
 using FtpSync.TaskManager;
 
 
@@ -10,6 +12,12 @@ namespace FtpSync.Controller
 {
     public class ChannelController : MyController
     {
+        readonly IVideoRegRep regRep;
+        public ChannelController(IVideoRegRep videoRegRep)
+        {
+            this.regRep = videoRegRep;
+        }
+
         [HttpGet]
         public List<ChannelTaskManager.ChannelTask> GetTasks()
         {
@@ -25,66 +33,52 @@ namespace FtpSync.Controller
         }
 
         [HttpPost]
-        public IHttpActionResult SyncByPeriod([FromBody] VideoIntervalModel model)//(int brigadeCode, string start, string end)
+        public IHttpActionResult SyncByPeriod([FromBody] VideoIntervalModel model)
         {
-            VideoReg reg = null;
-            using (var db = new DataContext())
-            {
-                // Поиск видеорегистратора в базе
-                reg = db.VideoReg.FirstOrDefault(x => x.BrigadeCode == model.BrigadeCode);
-            }
-
+            VideoReg reg = regRep.Get(model.BrigadeCode);
             if (reg == null)
             {
-                return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
+                return BadRequest($"The video registrator with brigadeCode={ model.BrigadeCode } was not found");
             }
+
             // Выполнение операции
             if (ChannelTaskManager.Instance.SyncChannelsByPeriod(reg, model.Interval))
                 return Ok();
+
             return BadRequest($"{model.BrigadeCode}({model.Interval}) - [ALREADY EXECUTE]");
         }
 
         [HttpPost]
         public IHttpActionResult SetTimeStamp([FromBody] TimeStampChannelModel model)
         {
-            VideoReg reg;
-            using (var db = new DataContext())
-            {
-                reg = db.VideoReg.FirstOrDefault(x => x.BrigadeCode == model.BrigadeCode);
-                if (reg == null)
-                    return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
-                reg.ChannelTimeStamp = model.TimeStamp;
-                db.SaveChanges();
-            }
+            UpdateEntetyStatus status = regRep.SetChannelTimeStamp(model.BrigadeCode, model.TimeStamp);
 
-            logger.Info($"BRIGADE={model.BrigadeCode} auto channel timeStamp was setting {model.TimeStamp}");
+            if (status == UpdateEntetyStatus.notExist)
+                BadRequest("Brigade was not found");
+
+            var reg = regRep.Get(model.BrigadeCode);
 
             if (reg.ChannelAutoLoad == AutoLoadStatus.on)
             {
-                OffAuto(model.BrigadeCode);
-                OnAuto(model.BrigadeCode);
+                AutoLoadChannelTaskManager.Instance.SetOffAutoload( model.BrigadeCode );
+                AutoLoadChannelTaskManager.Instance.SetOnAutoload( model.BrigadeCode );
             }
 
+            logger.Info($"BRIGADE={ model.BrigadeCode } auto channel timeStamp was setting { model.TimeStamp }");
             return Ok();
         }
 
         [HttpPost]
         public IHttpActionResult CancelTask([FromBody] ChannelIntervalModel model)
         {
-            VideoReg reg = null;
-            using (var db = new DataContext())
-            {
-                // Поиск видеорегистратора в базе
-                reg = db.VideoReg.FirstOrDefault(x => x.BrigadeCode == model.BrigadeCode);
-            }
-
+            VideoReg reg = regRep.Get(model.BrigadeCode);
             if (reg == null)
             {
                 return BadRequest($"The video registrator with brigadeCode={model.BrigadeCode} was not found");
             }
+
             // Выполнение операции
             ChannelTaskManager.Instance.CancelTask(reg, model.Interval);
-
             return Ok();
         }
 
